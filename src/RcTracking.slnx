@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="RcTracking.ApiFunction/RcTracking.ApiFunction.csproj" />
+  <Project Path="RcTracking.AppHost/RcTracking.AppHost.csproj" />
+  <Project Path="RcTracking.ServiceDefaults/RcTracking.ServiceDefaults.csproj" />
+  <Project Path="RcTracking.Test/RcTracking.Test.csproj" />
+  <Project Path="RcTracking.UI/RcTracking.UI.csproj" />
+</Solution>

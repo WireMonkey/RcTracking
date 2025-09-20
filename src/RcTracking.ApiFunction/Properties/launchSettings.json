@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "RcTracking.ApiFunction": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7272",
+      "launchBrowser": false
+    }
+  }
+}
