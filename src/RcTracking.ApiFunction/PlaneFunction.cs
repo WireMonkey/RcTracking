@@ -1,0 +1,95 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
+using RcTracking.ApiFunction.Interface;
+using RcTracking.ApiFunction.Model;
+using System.Reflection.Metadata.Ecma335;
+
+namespace RcTracking.ApiFunction;
+
+public class PlaneFunction
+{
+    private readonly ILogger<PlaneFunction> _logger;
+    private readonly IPlaneService _planeService;
+
+    public PlaneFunction(ILogger<PlaneFunction> logger, IPlaneService planeService)
+    {
+        _logger = logger;
+        _planeService = planeService;
+    }
+
+    [Function("Plane")]
+    public async Task<IActionResult> Plane([HttpTrigger(AuthorizationLevel.Function, "get", "post", "put", "delete")] HttpRequest req)
+    {
+        var verb = req.Method.ToLower();
+        _logger.LogInformation("C# HTTP trigger function processed a request. Verb: {Verb}.", verb);
+        return verb switch
+        {
+            "get" => await Get(req),
+            "post" => await Post(req),
+            "put" => await Put(req),
+            "delete" => await Delete(req),
+            _ => new StatusCodeResult(StatusCodes.Status405MethodNotAllowed)
+        };
+    }
+
+    private async Task<IActionResult> Get(HttpRequest req)
+    {
+        var id = req.Query["id"].ToString();
+        _logger.LogInformation("Get processing with, Id: {Id}", id);
+
+        var result = string.IsNullOrWhiteSpace(id) ? new OkObjectResult(await _planeService.GetPlanesAsync())
+            : new OkObjectResult(await _planeService.GetPlaneAsync(Guid.Parse(id)));
+        return result;
+    }
+
+    private async Task<IActionResult> Post(HttpRequest req)
+    {
+        var name = req.Query["name"].ToString();
+        _logger.LogInformation("C# HTTP trigger function processed a request. Name: {Name}", name);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return new BadRequestObjectResult("Please pass a name");
+        }
+        var result = await _planeService.CreatePlaneAsync(name);
+        return new OkObjectResult(result);
+    }
+
+    private async Task<IActionResult> Put(HttpRequest req)
+    {
+        var body = await req.ReadFromJsonAsync<PlaneModel>();
+        if (body == null || body.Id == Guid.Empty || string.IsNullOrWhiteSpace(body.Name))
+        {
+            return new BadRequestObjectResult("Please pass a valid body");
+        }
+
+        try
+        {
+            return new OkObjectResult(await _planeService.UpdatePlaneAsync(body.Id, body.Name));
+        }
+        catch (KeyNotFoundException)
+        {
+            return new BadRequestObjectResult("Please pass a valid key");
+        }
+    }
+
+    private async Task<IActionResult> Delete(HttpRequest req)
+    {
+        var id = req.Query["id"].ToString();
+        _logger.LogInformation("Delete processing with, Id: {Id}", id);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return new BadRequestObjectResult("Please pass a valid id");
+        }
+        try
+        {
+            await _planeService.DeletePlaneAsync(Guid.Parse(id));
+            return new OkResult();
+        }
+        catch (KeyNotFoundException)
+        {
+            return new BadRequestObjectResult("Please pass a valid key");
+        }
+    }
+}

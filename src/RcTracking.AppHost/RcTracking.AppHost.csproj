@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ApiFunction\RcTracking.ApiFunction.csproj" />
-    <ProjectReference Include="..\RcTracking.Test\RcTracking.Test.csproj" />
     <ProjectReference Include="..\RcTracking.UI\RcTracking.UI.csproj" />
   </ItemGroup>
 

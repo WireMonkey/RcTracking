@@ -20,7 +20,6 @@ var planes = db.AddContainer("planes", "/id");
 
 var functions = builder.AddAzureFunctionsProject<RcTracking_ApiFunction>("rc-tracking-function")
     .WithAzureUserAssignedIdentity(sharedMi)
-    .WithExternalHttpEndpoints()
     .WaitFor(cosmos)
     .WithReference(cosmos);
 
