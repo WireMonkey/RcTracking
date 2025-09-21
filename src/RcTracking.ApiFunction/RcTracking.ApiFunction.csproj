@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ServiceDefaults\RcTracking.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\RcTracking.Shared\RcTracking.Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RcTracking.ApiFunction.Context;
 using RcTracking.ApiFunction.Interface;
-using RcTracking.ApiFunction.Model;
+using RcTracking.Shared.Model;
 
 namespace RcTracking.ApiFunction.Service;
 

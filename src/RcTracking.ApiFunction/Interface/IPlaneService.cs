@@ -1,4 +1,4 @@
-﻿using RcTracking.ApiFunction.Model;
+﻿using RcTracking.Shared.Model;
 
 namespace RcTracking.ApiFunction.Interface
 {

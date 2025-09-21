@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace RcTracking.ApiFunction.Model;
+namespace RcTracking.Shared.Model;
 
 public class PlaneModel(Guid Id, string Name)
 {

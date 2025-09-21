@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using RcTracking.ApiFunction.Interface;
-using RcTracking.ApiFunction.Model;
+using RcTracking.Shared.Model;
 
 namespace RcTracking.ApiFunction;
 

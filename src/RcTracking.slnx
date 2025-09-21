@@ -2,6 +2,7 @@
   <Project Path="RcTracking.ApiFunction/RcTracking.ApiFunction.csproj" />
   <Project Path="RcTracking.AppHost/RcTracking.AppHost.csproj" />
   <Project Path="RcTracking.ServiceDefaults/RcTracking.ServiceDefaults.csproj" />
+  <Project Path="RcTracking.Shared/RcTracking.Shared.csproj" Id="f207330c-3892-4c1b-b04a-e45947542fa8" />
   <Project Path="RcTracking.Test/RcTracking.Test.csproj" />
   <Project Path="RcTracking.UI/RcTracking.UI.csproj" />
 </Solution>

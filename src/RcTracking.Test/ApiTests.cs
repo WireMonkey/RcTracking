@@ -1,7 +1,7 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using RcTracking.ApiFunction.Model;
+using RcTracking.Shared.Model;
 using System.Net.Http.Json;
 
 namespace RcTracking.Test;
