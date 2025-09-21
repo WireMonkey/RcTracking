@@ -4,7 +4,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using RcTracking.ApiFunction.Interface;
 using RcTracking.ApiFunction.Model;
-using System.Reflection.Metadata.Ecma335;
 
 namespace RcTracking.ApiFunction;
 
@@ -47,7 +46,7 @@ public class PlaneFunction
     private async Task<IActionResult> Post(HttpRequest req)
     {
         var name = req.Query["name"].ToString();
-        _logger.LogInformation("C# HTTP trigger function processed a request. Name: {Name}", name);
+        _logger.LogInformation("Post processing with, Name: {Name}", name);
         if (string.IsNullOrWhiteSpace(name))
         {
             return new BadRequestObjectResult("Please pass a name");
@@ -64,6 +63,7 @@ public class PlaneFunction
             return new BadRequestObjectResult("Please pass a valid body");
         }
 
+        _logger.LogInformation("Put processing with, Id: {Id}, Name: {Name}", body.Id,body.Name);
         try
         {
             return new OkObjectResult(await _planeService.UpdatePlaneAsync(body.Id, body.Name));

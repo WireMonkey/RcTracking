@@ -2,11 +2,6 @@
 using RcTracking.ApiFunction.Context;
 using RcTracking.ApiFunction.Interface;
 using RcTracking.ApiFunction.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RcTracking.ApiFunction.Service
 {
@@ -22,7 +17,7 @@ namespace RcTracking.ApiFunction.Service
         {
             var id = Guid.NewGuid();
             var plane = new PlaneModel(id, name);
-            await _dbContext.Planes.AddAsync(plane);
+            await _dbContext.AddAsync(plane);
             await _dbContext.SaveChangesAsync();
             return plane;
         }

@@ -34,11 +34,12 @@ public class ApiTests
         if (_app != null)
         {
             await _app.StopAsync();
-            await _app.DisposeAsync();
+            //await _app.DisposeAsync();
         }
     }
 
-    [Test, Order(1)]
+    [Test]
+    [Category("Health"), Order(1)]
     public async Task StartsHealthy()
     {
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("rc-tracking-function");
@@ -120,6 +121,84 @@ public class ApiTests
 
         var response = await client.DeleteAsync($"/api/Plane?id={id}");
 
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+    }
+
+    [Test]
+    [Category("FlightCrud"), Order(210)]
+    public async Task FlightCreate() 
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var planeResponse = await client.PostAsJsonAsync("/api/Plane?name=FlightCreateTest", "");
+        var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
+
+        var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "Test flight creation");
+        var response = await client.PostAsJsonAsync($"/api/Flight", flight);
+
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        var returnModel = await response.Content.ReadFromJsonAsync<FlightModel>();
+
+        Assert.That(returnModel, Is.Not.Null);
+        Assert.That(returnModel.Id, Is.Not.EqualTo(Guid.Empty));
+    }
+
+    [Test]
+    [Category("FlightCrud"), Order(220)]
+    public async Task FlightGet()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var response = await client.GetAsync("/api/Flight");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var flights = await response.Content.ReadFromJsonAsync<List<FlightModel>>();
+        Assert.That(flights, Is.Not.Null);
+    }
+
+    [Test]
+    [Category("FlightCrud"), Order(221)]
+    public async Task FlightGetSingle()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Flight");
+        var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
+        var id = flights?.First().Id;
+
+        var response = await client.GetAsync($"/api/Flight?id={id}");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var flight = await response.Content.ReadFromJsonAsync<FlightModel>();
+        Assert.That(flight, Is.Not.Null);
+        Assert.That(flight.Id, Is.EqualTo(id));
+    }
+
+    [Test]
+    [Category("FlightCrud"), Order(230)]
+    public async Task FlightUpdate()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Flight");
+        var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
+        var flight = flights!.First();
+        flight.Notes = "Updated notes";
+
+        var response = await client.PutAsJsonAsync($"/api/Flight", flight);
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        
+        var returnModel = await response.Content.ReadFromJsonAsync<FlightModel>();
+        Assert.That(returnModel, Is.Not.Null);
+        Assert.That(returnModel.Notes, Is.EqualTo("Updated notes"));
+    }
+
+    [Test]
+    [Category("FlightCrud"), Order(240)]
+    public async Task FlightDelete()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Flight");
+        var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
+        var id = flights?.First().Id;
+
+        var response = await client.DeleteAsync($"/api/Flight?id={id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
     }
 }

@@ -18,7 +18,9 @@ builder.Services
 
 builder.AddAzureCosmosClient(connectionName: "rc-tracking-cosmos-db");
 builder.AddCosmosDbContext<PlaneContext>("rc-tracking-cosmos-db", "RcTrackingDb");
+builder.AddCosmosDbContext<FlightContext>("rc-tracking-cosmos-db", "RcTrackingDb");
 
 builder.Services.AddScoped<IPlaneService, PlaneService>();
+builder.Services.AddScoped<IFlightService, FlightService>();
 
 builder.Build().Run();
