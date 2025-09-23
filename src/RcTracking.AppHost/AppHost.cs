@@ -23,9 +23,19 @@ var functions = builder.AddAzureFunctionsProject<RcTracking_ApiFunction>("rc-tra
     .WaitFor(cosmos)
     .WithReference(cosmos);
 
-builder.AddProject<RcTracking_UI>("rc-tracking-ui")
+var gateway = builder.AddYarp("gateway")
+    .WithReference(functions)
+    .WithConfiguration(yarp =>
+    {
+        yarp.AddRoute("/api/{**catch-all}", functions);
+    })
+    .WithHostPort(8080)
     .WithAzureUserAssignedIdentity(sharedMi)
     .WaitFor(functions)
-    .WithReference(functions);
+    .WithExternalHttpEndpoints();
+
+builder.AddProject<RcTracking_UI>("rc-tracking-ui")
+    .WithAzureUserAssignedIdentity(sharedMi)
+    .WaitFor(gateway);
 
 builder.Build().Run();
