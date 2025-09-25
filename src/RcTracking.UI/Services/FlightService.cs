@@ -14,7 +14,14 @@ namespace RcTracking.UI.Services
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         }
 
-        public Dictionary<Guid,FlightModel> Flights { get; } = new();
+        public Dictionary<Guid, FlightModel> Flights
+        {
+            get
+            {
+                return _flights;
+            }
+        }
+        private Dictionary<Guid, FlightModel> _flights { get; set; } = new();
 
         public async Task LoadFlightsAsync()
         {
@@ -30,8 +37,8 @@ namespace RcTracking.UI.Services
                         }));
                 if (apiReturn is not null)
                 {
-                    Flights.Clear();
-                    apiReturn.ToDictionary(f => f.Id, f => f);
+                    _flights.Clear();
+                    _flights = apiReturn.ToDictionary(f => f.Id, f => f);
                     _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
                 }
             }
@@ -51,7 +58,7 @@ namespace RcTracking.UI.Services
                         }));
                 if (addedFlight is not null)
                 {
-                    Flights.Add(addedFlight.Id, addedFlight);
+                    _flights.Add(addedFlight.Id, addedFlight);
                     _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
                 }
             }
@@ -71,7 +78,7 @@ namespace RcTracking.UI.Services
                         }));
                 if (updatedFlight is not null)
                 {
-                    if (Flights.TryGetValue(updatedFlight.Id, out var existingFlight))
+                    if (_flights.TryGetValue(updatedFlight.Id, out var existingFlight))
                     {
                         existingFlight.UpdateFrom(updatedFlight);
                         _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
@@ -86,7 +93,7 @@ namespace RcTracking.UI.Services
             var response = await httpClient.DeleteAsync($"{_apiUrl}flight/{flightId}");
             if (response.IsSuccessStatusCode)
             {
-                if (Flights.Remove(flightId))
+                if (_flights.Remove(flightId))
                 {
                     _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
                 }
