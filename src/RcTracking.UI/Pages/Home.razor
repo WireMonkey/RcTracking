@@ -1,7 +1,47 @@
 ﻿@page "/"
+@using RcTracking.Shared.Model
+@using RcTracking.UI.Services
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+//Add a button that calls the flight service get method
+<button class="btn btn-primary" @onclick="GetFlights">Get Flights</button>	
+@if (flights != null)
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Date</th>
+				<th>Plane</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var flight in flights)
+			{
+				<tr>
+					<td>@flight.Id</td>
+					<td>@flight.FlightDate</td>
+					<td>@flight.PlaneId</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+@code {
+	//Inject the flight service
+	[Inject]
+	private FlightService FlightService { get; set; }
+	//Create a list of flights
+	private List<FlightModel> flights;
+	//Create a method to get the flights
+	private async Task GetFlights()
+	{
+		await FlightService.LoadFlightsAsync();
+		flights = FlightService.Flights.Select(s => s.Value).ToList();
+	}
+}
