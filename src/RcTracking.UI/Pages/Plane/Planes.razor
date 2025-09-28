@@ -2,6 +2,8 @@
 @using RcTracking.Shared.Model
 @using RcTracking.UI.Events
 @using RcTracking.UI.Services
+@inject IDialogService DialogService
+
 <h3>Planes</h3>
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
 	<MudItem xs="4">
@@ -15,12 +17,12 @@
 	<MudItem xs="8">
 		<MudCard Outlined="true">
 			<MudCardContent>
-				<MudButton Variant="Variant.Filled" Color="Color.Primary">Add Plane</MudButton>
+				<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="OpenNewPlaneDialog">Add Plane</MudButton>
 			</MudCardContent>
 		</MudCard>
 	</MudItem>
 
-	@foreach(var plane in planes)
+	@foreach(var plane in planes) 
 	{
 		<MudItem xs="3">
 			<MudCard Outlined="true">
@@ -71,6 +73,13 @@
 		{
 			planes = PlaneService.Planes.Values.ToList();
 			planeCount = planes.Count;
+			StateHasChanged();
 		}
+	}
+
+	private Task OpenNewPlaneDialog()
+	{
+		var options = new DialogOptions { CloseOnEscapeKey = true };
+		return DialogService.ShowAsync<NewPlane>("", options);
 	}
 }

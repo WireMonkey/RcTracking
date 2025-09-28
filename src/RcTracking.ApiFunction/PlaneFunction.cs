@@ -45,13 +45,13 @@ public class PlaneFunction
 
     private async Task<IActionResult> Post(HttpRequest req)
     {
-        var name = req.Query["name"].ToString();
-        _logger.LogInformation("Post processing with, Name: {Name}", name);
-        if (string.IsNullOrWhiteSpace(name))
+        var body = await req.ReadFromJsonAsync<PlaneModel>();
+        if (body == null || body.Id != Guid.Empty || string.IsNullOrWhiteSpace(body.Name))
         {
-            return new BadRequestObjectResult("Please pass a name");
+            return new BadRequestObjectResult("Please pass a valid body");
         }
-        var result = await _planeService.CreatePlaneAsync(name);
+
+        var result = await _planeService.CreatePlaneAsync(body);
         return new OkObjectResult(result);
     }
 

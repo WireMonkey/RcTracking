@@ -1,0 +1,43 @@
+﻿@using RcTracking.Shared.Model
+@using RcTracking.UI.Services
+@using System.Threading.Tasks
+<MudDialog>
+    <TitleContent>
+        New Plane
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12">
+				<MudTextField @bind-Value="name" Label="Name" Variant="Variant.Filled" FullWidth="true" />
+			</MudItem>
+        </MudGrid>
+        <MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Inject]
+    private PlaneService PlaneService { get; set; }
+
+    private async Task Submit() 
+    { 
+        _visible = true;
+        var nPlane = new PlaneModel(Guid.Empty, name);
+        await PlaneService.AddPlaneAsync(nPlane);
+        MudDialog.Close(DialogResult.Ok(true));
+		_visible = false;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+	
+    private bool _visible = false;
+
+	private string name { get; set; } = string.Empty;
+}

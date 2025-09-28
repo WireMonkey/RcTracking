@@ -55,7 +55,8 @@ public class ApiTests
     public async Task PlaneCreate()
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var response = await client.PostAsJsonAsync("/api/Plane?name=GetTest", "");
+        var plane = new PlaneModel(Guid.Empty, "GetTest");
+        var response = await client.PostAsJsonAsync("/api/Plane", plane);
         Assert.That(response.IsSuccessStatusCode, Is.True);
 
         var returnModel = await response.Content.ReadFromJsonAsync<PlaneModel>();
@@ -129,7 +130,8 @@ public class ApiTests
     public async Task FlightCreate() 
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var planeResponse = await client.PostAsJsonAsync("/api/Plane?name=FlightCreateTest", "");
+        var nPlane = new PlaneModel(Guid.Empty, "FlightCreateTest");
+        var planeResponse = await client.PostAsJsonAsync("/api/Plane", nPlane);
         var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
 
         var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "Test flight creation");

@@ -13,13 +13,12 @@ namespace RcTracking.ApiFunction.Service
             _dbContext = dbContext;
         }
 
-        public async Task<PlaneModel> CreatePlaneAsync(string name)
+        public async Task<PlaneModel> CreatePlaneAsync(PlaneModel plane)
         {
-            var id = Guid.NewGuid();
-            var plane = new PlaneModel(id, name);
-            await _dbContext.AddAsync(plane);
+            var dbRec = PlaneModel.CreateDbRec(plane.Name);
+            await _dbContext.AddAsync(dbRec);
             await _dbContext.SaveChangesAsync();
-            return plane;
+            return dbRec;
         }
 
         public async Task DeletePlaneAsync(Guid id)
