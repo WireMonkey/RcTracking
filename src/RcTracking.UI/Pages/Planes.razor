@@ -1,0 +1,76 @@
+﻿@page "/Plane"
+@using RcTracking.Shared.Model
+@using RcTracking.UI.Events
+@using RcTracking.UI.Services
+<h3>Planes</h3>
+<MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
+	<MudItem xs="4">
+		<MudCard Outlined="true">
+			<MudCardContent>
+				<MudText Typo="Typo.h5" GutterBottom="true">Total Planes</MudText>
+				@planeCount
+			</MudCardContent>
+		</MudCard>
+	</MudItem>
+	<MudItem xs="8">
+		<MudCard Outlined="true">
+			<MudCardContent>
+				<MudButton Variant="Variant.Filled" Color="Color.Primary">Add Plane</MudButton>
+			</MudCardContent>
+		</MudCard>
+	</MudItem>
+
+	@foreach(var plane in planes)
+	{
+		<MudItem xs="3">
+			<MudCard Outlined="true">
+				<MudCardHeader>
+					<MudText Typo="Typo.h6" GutterBottom="true">@plane.Name</MudText>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText Typo="Typo.body2" GutterBottom="true">Battery: </MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Motor: </MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Flying: </MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+	}
+</MudGrid>
+
+@code {
+
+	[Inject]
+	private EventBus EventBus { get; set; }
+
+	[Inject]
+	private PlaneService PlaneService { get; set; }
+
+	private int planeCount { get; set; } = 0;
+	private List<PlaneModel> planes = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		EventBus.OnMessage += OnMessage;
+
+		if(PlaneService.HasLoaded)
+		{
+			planes = PlaneService.Planes.Values.ToList();
+			planeCount = planes.Count;
+		}
+		else
+		{
+			await PlaneService.LoadPlanesAsync();
+		}
+	}
+
+	private void OnMessage(object? sender, EventMessage? e)
+	{
+		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
+
+		if (e?.Event == EventEnum.RefreshPlane)
+		{
+			planes = PlaneService.Planes.Values.ToList();
+			planeCount = planes.Count;
+		}
+	}
+}

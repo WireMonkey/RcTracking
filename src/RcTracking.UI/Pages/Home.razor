@@ -21,7 +21,7 @@
 	<MudItem xs="6">
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" GutterBottom="true">Total Planes</MudText>
-			0
+			@planeCount
 		</MudPaper>
 	</MudItem>
 	<MudItem xs="6">
@@ -38,24 +38,62 @@
 	private FlightService FlightService { get; set; }
 
 	[Inject]
+	private PlaneService PlaneService { get; set; }
+
+	[Inject]
 	private EventBus EventBus { get; set; }
 
 	private int flightCount { get; set; } = 0;
 
+	private int planeCount { get; set; } = 0;
+
 	protected override async Task OnInitializedAsync()
 	{
 		EventBus.OnMessage += OnMessage;
-
-		await FlightService.LoadFlightsAsync();
+		await loadFlights();
+		await loadPlanes();
 	}
 
 	private void OnMessage(object? sender, EventMessage? e)
 	{
 		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
 
-		if(e?.Event == EventEnum.RefreshFlight)
+		switch (e?.Event)
 		{
-			flightCount = FlightService.Flights.Count;
+			case EventEnum.RefreshFlight:
+				flightCount = FlightService.Flights?.Count ?? 0;
+				InvokeAsync(StateHasChanged);
+				break;
+			case EventEnum.RefreshPlane:
+				planeCount = PlaneService.Planes?.Count ?? 0;
+				InvokeAsync(StateHasChanged);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private async Task loadFlights()
+	{
+		if (!FlightService.HasLoaded)
+		{
+			await FlightService.LoadFlightsAsync();
+		}
+		else
+		{
+			flightCount = FlightService.Flights?.Count ?? 0;
+		}
+	}
+
+	private async Task loadPlanes()
+	{
+		if (!PlaneService.HasLoaded)
+		{
+			await PlaneService.LoadPlanesAsync();
+		}
+		else
+		{
+			planeCount = PlaneService.Planes?.Count ?? 0;
 		}
 	}
 }

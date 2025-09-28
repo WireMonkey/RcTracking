@@ -16,6 +16,7 @@ builder.Services.AddScoped(sp => httpClient);
 
 builder.Services.AddScoped<EventBus>();
 builder.Services.AddScoped<FlightService>();
+builder.Services.AddScoped<PlaneService>();
 
 builder.Services.AddMsalAuthentication(options =>
 {

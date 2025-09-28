@@ -14,6 +14,8 @@ namespace RcTracking.UI.Services
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         }
 
+        private Dictionary<Guid, FlightModel> _flights { get; set; } = new();
+
         public Dictionary<Guid, FlightModel> Flights
         {
             get
@@ -21,7 +23,8 @@ namespace RcTracking.UI.Services
                 return _flights;
             }
         }
-        private Dictionary<Guid, FlightModel> _flights { get; set; } = new();
+
+        public bool HasLoaded => _flights.Count != 0;
 
         public async Task LoadFlightsAsync()
         {
