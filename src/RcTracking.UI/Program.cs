@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using RcTracking.UI;
-using Microsoft.Extensions.Configuration;
 using RcTracking.UI.Services;
+using RcTracking.UI.Interface;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,8 +15,9 @@ var httpClient = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.
 builder.Services.AddScoped(sp => httpClient);
 
 builder.Services.AddScoped<EventBus>();
-builder.Services.AddScoped<FlightService>();
-builder.Services.AddScoped<PlaneService>();
+builder.Services.AddScoped<IFlightService, FlightService>();
+builder.Services.AddScoped<IPlaneService, PlaneService>();
+builder.Services.AddScoped<ICombineDataService, CombineDataService>();
 
 builder.Services.AddMsalAuthentication(options =>
 {

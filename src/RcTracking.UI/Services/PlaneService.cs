@@ -1,9 +1,11 @@
 ﻿using RcTracking.Shared.Model;
+using RcTracking.UI.Events;
+using RcTracking.UI.Interface;
 using System.Net.Http.Json;
 
 namespace RcTracking.UI.Services
 {
-    public class PlaneService
+    public class PlaneService : IPlaneService
     {
         private readonly string _apiUrl;
         private readonly EventBus _eventBus;
@@ -41,8 +43,12 @@ namespace RcTracking.UI.Services
                 if (apiReturn is not null)
                 {
                     _planes.Clear();
-                    _planes = apiReturn.ToDictionary(f => f.Id, f => f);
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshPlane };
+                    _planes.EnsureCapacity(apiReturn.Count);
+                    foreach (var plane in apiReturn)
+                    {
+                        _planes[plane.Id] = plane;
+                    }
+                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshPlane };
                 }
             }
         }
@@ -62,7 +68,7 @@ namespace RcTracking.UI.Services
                 if (addedPlane is not null)
                 {
                     _planes.Add(addedPlane.Id, addedPlane);
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshPlane };
+                    _eventBus.Message = new PlaneFlightAddedMessage { Event = EventEnum.RefreshPlane, PlaneId = addedPlane.Id };
                 }
             }
         }
@@ -82,7 +88,7 @@ namespace RcTracking.UI.Services
                 if (updatedPlane is not null)
                 {
                     _planes[updatedPlane.Id] = updatedPlane;
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshPlane };
+                    _eventBus.Message = new EventMessage { Event = EventEnum.PlaneUpdated };
                 }
             }
         }
@@ -96,7 +102,7 @@ namespace RcTracking.UI.Services
                 if (_planes.ContainsKey(planeId))
                 {
                     _planes.Remove(planeId);
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshPlane };
+                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshPlane };
                 }
             }
         }

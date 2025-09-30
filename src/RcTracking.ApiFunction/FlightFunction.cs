@@ -56,9 +56,9 @@ public class FlightFunction
     private async Task<IActionResult> Put(HttpRequest req)
     {
         var flight = await req.ReadFromJsonAsync<FlightModel>();
-        if (flight == null)
+        if (flight == null || flight?.Id == null || flight.Id == Guid.Empty)
         {
-            return new BadRequestObjectResult("Please pass a flight in the request body");
+            return new BadRequestObjectResult("Please pass a valid flight model in the request body");
         }
         var result = await _flightService.UpdateFlightAsync(flight);
         return new OkObjectResult(result);

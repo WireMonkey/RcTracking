@@ -46,11 +46,7 @@ public class FlightService : IFlightService
 
     public async Task<FlightModel> UpdateFlightAsync(FlightModel flight)
     {
-        var dbRec = await _flightContext.FindAsync<FlightModel>(flight.Id);
-        if (dbRec == null)
-        {
-            throw new KeyNotFoundException($"Flight with id {flight.Id} not found");
-        }
+        var dbRec = await _flightContext.FindAsync<FlightModel>(flight.Id) ?? throw new KeyNotFoundException($"Flight with id {flight.Id} not found");
         dbRec!.UpdateFrom(flight);
         await _flightContext.SaveChangesAsync();
         return dbRec;

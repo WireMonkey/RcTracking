@@ -1,9 +1,11 @@
 ﻿using RcTracking.Shared.Model;
+using RcTracking.UI.Events;
+using RcTracking.UI.Interface;
 using System.Net.Http.Json;
 
 namespace RcTracking.UI.Services
 {
-    public class FlightService
+    public class FlightService : IFlightService
     {
         private readonly string _apiUrl;
         private readonly EventBus _eventBus;
@@ -42,7 +44,7 @@ namespace RcTracking.UI.Services
                 {
                     _flights.Clear();
                     _flights = apiReturn.ToDictionary(f => f.Id, f => f);
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
+                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
             }
         }
@@ -62,7 +64,7 @@ namespace RcTracking.UI.Services
                 if (addedFlight is not null)
                 {
                     _flights.Add(addedFlight.Id, addedFlight);
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
+                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
             }
         }
@@ -84,7 +86,7 @@ namespace RcTracking.UI.Services
                     if (_flights.TryGetValue(updatedFlight.Id, out var existingFlight))
                     {
                         existingFlight.UpdateFrom(updatedFlight);
-                        _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
+                        _eventBus.Message = new PlaneFlightAddedMessage { Event = EventEnum.RefreshPlane, PlaneId = updatedFlight.PlaneId };
                     }
                 }
             }
@@ -98,7 +100,7 @@ namespace RcTracking.UI.Services
             {
                 if (_flights.Remove(flightId))
                 {
-                    _eventBus.Message = new Events.EventMessage { Event = Events.EventEnum.RefreshFlight };
+                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
             }
         }

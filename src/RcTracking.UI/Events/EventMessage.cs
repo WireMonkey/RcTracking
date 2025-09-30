@@ -6,6 +6,5 @@ namespace RcTracking.UI.Events
     {
         [Required]
         public EventEnum Event { get; init; }
-        public virtual object? Data { get; init; } = null;
     }
 }
