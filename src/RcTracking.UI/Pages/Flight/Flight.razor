@@ -1,0 +1,97 @@
+﻿@page "/Flight"
+
+@using RcTracking.Shared.Model
+@using RcTracking.UI.Events
+@using RcTracking.UI.Services
+
+<MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
+	<MudItem xs="4">
+		<MudCard Outlined="true">
+			<MudCardContent>
+				<MudText Typo="Typo.h5" GutterBottom="true">Total Flights</MudText>
+				@flightCount
+			</MudCardContent>
+		</MudCard>
+	</MudItem>
+	<MudItem xs="8">
+		<MudCard Outlined="true">
+			<MudCardContent>
+				<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="OpenNewFlightDialog">Add Flight</MudButton>
+			</MudCardContent>
+		</MudCard>
+	</MudItem>
+
+	@foreach (var flight in flights)
+	{
+		<MudItem xs="3">
+			<MudCard Outlined="true">
+				<MudCardHeader>
+					<MudText Typo="Typo.h6" GutterBottom="true">@flight.FlightDate</MudText>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText Typo="Typo.body2" GutterBottom="true">Plane: @GetPlaneName(flight.PlaneId)</MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Flight: @flight.FlightCount</MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Notes: </MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+	}
+</MudGrid>
+
+@code {
+
+	[Inject]
+	private EventBus EventBus { get; set; }
+
+	[Inject]
+	private FlightService FlightService { get; set; }
+
+	[Inject]
+	private PlaneService PlaneService { get; set; }
+
+	private int flightCount { get; set; } = 0;
+	private List<FlightModel> flights = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		EventBus.OnMessage += OnMessage;
+
+		if (FlightService.HasLoaded)
+		{
+			flights = FlightService.Flights.Values.ToList();
+			flightCount = flights.Count;
+		}
+		else
+		{
+			await FlightService.LoadFlightsAsync();
+		}
+	}
+
+	private void OnMessage(object? sender, EventMessage? e)
+	{
+		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
+
+		if (e?.Event == EventEnum.RefreshFlight)
+		{
+			flights = FlightService.Flights.Values.ToList();
+			flightCount = flights.Count;
+			StateHasChanged();
+		}
+	}
+
+	private void OpenNewFlightDialog()
+	{
+		Console.WriteLine("Open new flight dialog - not implemented"); 
+		// var options = new DialogOptions { CloseOnEscapeKey = true };
+		// return DialogService.ShowAsync<NewPlane>("", options);
+	}
+
+	private string GetPlaneName(Guid planeId)
+	{
+		if (PlaneService.Planes.TryGetValue(planeId, out var plane))
+		{
+			return plane.Name;
+		}
+		return "";
+	}
+}
