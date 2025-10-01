@@ -1,0 +1,68 @@
+﻿@using RcTracking.Shared.Model
+@using RcTracking.UI.Interface
+@using RcTracking.UI.Services
+@using System.Threading.Tasks
+
+<MudDialog>
+    <TitleContent>
+        New Flight
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="6">
+                <MudDatePicker Label="Flight Date" @bind-Date="_date" Required="true" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect T="PlaneModel" Label="Plane" @bind-Value="_plane" Variant="Variant.Filled" FullWidth="true">
+                    @foreach (var plane in planes)
+                    {
+                        <MudSelectItem T="PlaneModel" Value="@(plane)">@plane.Name</MudSelectItem>
+					}
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+        <MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Inject]
+    private IFlightService FlightService { get; set; }
+
+    [Inject]
+    private IPlaneService PlaneService { get; set; }
+
+    private List<PlaneModel> planes = new List<PlaneModel>();
+
+    protected override void OnInitialized()
+    {
+        if (PlaneService.HasLoaded)
+        {
+            planes = PlaneService.Planes.Values.ToList();
+        }   
+    }
+
+    private async Task Submit()
+    {
+        _visible = true;
+        var nFlight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(_date ?? DateTime.Now), _plane!.Id, 1, "");
+        await FlightService.AddFlightAsync(nFlight);
+        MudDialog.Close(DialogResult.Ok(true));
+        _visible = false;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private bool _visible = false;
+
+    private PlaneModel? _plane;
+
+    private DateTime? _date = DateTime.Today;
+}

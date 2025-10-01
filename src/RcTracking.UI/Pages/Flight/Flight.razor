@@ -2,7 +2,10 @@
 
 @using RcTracking.Shared.Model
 @using RcTracking.UI.Events
+@using RcTracking.UI.Interface
 @using RcTracking.UI.Services
+
+@inject IDialogService DialogService
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
 	<MudItem xs="4">
@@ -44,10 +47,10 @@
 	private EventBus EventBus { get; set; }
 
 	[Inject]
-	private FlightService FlightService { get; set; }
+	private IFlightService FlightService { get; set; }
 
 	[Inject]
-	private PlaneService PlaneService { get; set; }
+	private IPlaneService PlaneService { get; set; }
 
 	private int flightCount { get; set; } = 0;
 	private List<FlightModel> flights = new();
@@ -79,11 +82,10 @@
 		}
 	}
 
-	private void OpenNewFlightDialog()
+	private Task OpenNewFlightDialog()
 	{
-		Console.WriteLine("Open new flight dialog - not implemented"); 
-		// var options = new DialogOptions { CloseOnEscapeKey = true };
-		// return DialogService.ShowAsync<NewPlane>("", options);
+		 var options = new DialogOptions { CloseOnEscapeKey = true };
+		 return DialogService.ShowAsync<NewFlight>("", options);
 	}
 
 	private string GetPlaneName(Guid planeId)
