@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using RcTracking.Shared.Model
 @using RcTracking.UI.Events
+@using RcTracking.UI.Interface
 @using RcTracking.UI.Services
 
 <PageTitle>Home</PageTitle>
@@ -35,10 +36,10 @@
 @code {
 
 	[Inject]
-	private FlightService FlightService { get; set; }
+	private IFlightService FlightService { get; set; }
 
 	[Inject]
-	private PlaneService PlaneService { get; set; }
+	private IPlaneService PlaneService { get; set; }
 
 	[Inject]
 	private EventBus EventBus { get; set; }

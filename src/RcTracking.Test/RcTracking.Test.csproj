@@ -23,11 +23,17 @@
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ApiFunction\RcTracking.ApiFunction.csproj" />
     <ProjectReference Include="..\RcTracking.AppHost\RcTracking.AppHost.csproj" />
+    <ProjectReference Include="..\RcTracking.Mock\RcTracking.Mock.csproj" />
     <ProjectReference Include="..\RcTracking.Shared\RcTracking.Shared.csproj" />
+    <ProjectReference Include="..\RcTracking.UI\RcTracking.UI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UiTests" />
   </ItemGroup>
 
 </Project>

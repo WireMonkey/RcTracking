@@ -3,11 +3,11 @@
 @using RcTracking.Shared.Model
 @using RcTracking.UI.Events
 @using RcTracking.UI.Services
-
+@using RcTracking.UI.Interface
 @inject IDialogService DialogService
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
-	<MudItem xs="4">
+	<MudItem xs="4">		
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudText Typo="Typo.h5" GutterBottom="true">Total Planes</MudText>
@@ -46,7 +46,10 @@
 	private EventBus EventBus { get; set; }
 
 	[Inject]
-	private PlaneService PlaneService { get; set; }
+	private IPlaneService PlaneService { get; set; }
+
+	[Inject]
+	private ICombineDataService CombineDataService { get; set; }
 
 	private int planeCount { get; set; } = 0;
 	private List<PlaneModel> planes = new();
@@ -70,7 +73,7 @@
 	{
 		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
 
-		if (e?.Event == EventEnum.RefreshPlane)
+		if (e?.Event == EventEnum.RefreshPlane || e.Event == EventEnum.PlaneUpdated)
 		{
 			planes = PlaneService.Planes.Values.ToList();
 			planeCount = planes.Count;
