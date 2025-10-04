@@ -35,15 +35,15 @@ namespace RcTracking.UI.Services
             if (response.IsSuccessStatusCode)
             {
                 var apiReturn = await response.Content.ReadAsStringAsync()
-                    .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<List<FlightModel>>(t.Result,
+                    .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<FlightModel[]>(t.Result,
                         new System.Text.Json.JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
                         }));
                 if (apiReturn is not null)
                 {
-                    _flights.Clear();
-                    _flights = apiReturn.ToDictionary(f => f.Id, f => f);
+                    AddSortedFlights(apiReturn);
+
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
             }
@@ -63,7 +63,14 @@ namespace RcTracking.UI.Services
                         }));
                 if (addedFlight is not null)
                 {
-                    _flights.Add(addedFlight.Id, addedFlight);
+                    var dFlights = new FlightModel[_flights.Count + 1];
+                    dFlights[0] = addedFlight;
+                    for (int i = 0; i < _flights.Count; i++)
+                    {
+                        dFlights[i + 1] = _flights.Values.ElementAt(i);
+                    }
+                    
+                    AddSortedFlights(dFlights);
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
             }
@@ -102,6 +109,63 @@ namespace RcTracking.UI.Services
                 {
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
+            }
+        }
+
+        public int TotalFlights()
+        {
+            var total = 0;
+            foreach (var flight in _flights.Values)
+            {
+                total += flight.FlightCount;
+            }
+            return total;
+        }
+
+        public int TotalFlights(int year)
+        {
+            var total = 0;
+            foreach (var flight in _flights.Values)
+            {
+                if (flight.FlightDate.Year == year)
+                {
+                    total += flight.FlightCount;
+                }
+            }
+            return total;
+        }
+
+        public int DaysFlying()
+        {
+            var uniqueDays = new HashSet<DateOnly>();
+            foreach (var flight in _flights.Values)
+            {
+                uniqueDays.Add(flight.FlightDate);
+            }
+            return uniqueDays.Count;
+        }
+
+        public int DaysFlying(int year)
+        {
+            var uniqueDays = new HashSet<DateOnly>();
+            foreach (var flight in _flights.Values)
+            {
+                if (flight.FlightDate.Year == year)
+                {
+                    uniqueDays.Add(flight.FlightDate);
+                }
+            }
+            return uniqueDays.Count;
+        }
+
+        private void AddSortedFlights(FlightModel[] flights)
+        {
+            Array.Sort(flights, (x, y) => x.FlightDate.CompareTo(y.FlightDate));
+            _flights.Clear();
+            _flights.EnsureCapacity(flights.Length);
+            foreach (var flight in flights)
+            {
+                _flights[flight.Id] = flight;
             }
         }
 

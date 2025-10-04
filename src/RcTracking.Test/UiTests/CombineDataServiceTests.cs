@@ -23,7 +23,7 @@ public class CombineDataServiceTests
 
     [Test]
     [Category("UiTests")]
-    public void CalculatePlaneStats_All()
+    public void CalculatePlaneStatsAll()
     {
         // Arrange
         var svc = new CombineDataService(planeService, flightService, eventBus);
@@ -58,7 +58,7 @@ public class CombineDataServiceTests
 
     [Test]
     [Category("UiTests")]
-    public void CalculatePlaneStats_Single()
+    public void CalculatePlaneStatsSingle()
     {
         var svc = new CombineDataService(planeService, flightService, eventBus);
 

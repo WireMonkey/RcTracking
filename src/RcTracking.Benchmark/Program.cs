@@ -1,4 +1,5 @@
 using BenchmarkDotNet.Running;
+using BenchmarkSuite1;
 
 namespace BenchmarkSuite2
 {
@@ -6,7 +7,8 @@ namespace BenchmarkSuite2
     {
         static void Main(string[] args)
         {
-            var _ = BenchmarkRunner.Run(typeof(Program).Assembly);
+            // Run only our specific sorting benchmark
+            BenchmarkRunner.Run<FlightService_SortByDate_Benchmark>();
         }
     }
 }

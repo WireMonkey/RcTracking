@@ -7,7 +7,7 @@ using Microsoft.VSDiagnostics;
 namespace BenchmarkSuite1
 {
     [CPUUsageDiagnoser]
-    public class DictionaryClear_Benchmark
+    public class DictionaryClearBenchmark
     {
         private List<FlightModel> _flights;
         [GlobalSetup]

@@ -10,5 +10,10 @@ namespace RcTracking.UI.Interface
         Task AddFlightAsync(FlightModel flight);
         Task UpdateFlightAsync(FlightModel flight);
         Task DeleteFlightAsync(Guid flightId);
+        int TotalFlights();
+        int TotalFlights(int year);
+        int DaysFlying();
+        int DaysFlying(int year);
+
     }
 }

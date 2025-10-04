@@ -20,6 +20,12 @@
 					}
                 </MudSelect>
             </MudItem>
+            <MudItem xs ="4">
+                <MudNumericField @bind-Value="_flights" Label="Flights" Variant="Variant.Text" Min="1" Max="10" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string" @bind-Value="_notes" Label="Notes" Variant="Variant.Text" FullWidth="true" />
+            </MudItem>
         </MudGrid>
         <MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true" />
     </DialogContent>
@@ -52,7 +58,7 @@
     private async Task Submit()
     {
         _visible = true;
-        var nFlight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(_date ?? DateTime.Now), _plane!.Id, 1, "");
+        var nFlight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(_date ?? DateTime.Now), _plane!.Id, _flights, _notes);
         await FlightService.AddFlightAsync(nFlight);
         MudDialog.Close(DialogResult.Ok(true));
         _visible = false;
@@ -66,4 +72,6 @@
 
     private DateTime? _date = DateTime.Today;
     private DateTime? _maxDate = DateTime.Today;
+	private int _flights = 1;
+	private string _notes = string.Empty;
 }

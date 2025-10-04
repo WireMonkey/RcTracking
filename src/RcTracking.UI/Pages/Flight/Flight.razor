@@ -8,11 +8,19 @@
 @inject IDialogService DialogService
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
-	<MudItem xs="4">
+	<MudItem xs="2">
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudText Typo="Typo.h5" GutterBottom="true">Total Flights</MudText>
 				@flightCount
+			</MudCardContent>
+		</MudCard>
+	</MudItem>
+	<MudItem xs="2">
+		<MudCard Outlined="true">
+			<MudCardContent>
+				<MudText Typo="Typo.h5" GutterBottom="true">This Year</MudText>
+				@flightThisYear
 			</MudCardContent>
 		</MudCard>
 	</MudItem>
@@ -53,6 +61,7 @@
 	private IPlaneService PlaneService { get; set; }
 
 	private int flightCount { get; set; } = 0;
+	private int flightThisYear { get; set; } = 0;
 	private List<FlightModel> flights = new();
 
 	protected override async Task OnInitializedAsync()
@@ -62,7 +71,7 @@
 		if (FlightService.HasLoaded)
 		{
 			flights = FlightService.Flights.Values.ToList();
-			flightCount = flights.Count;
+			SetFlightCount();
 		}
 		else
 		{
@@ -77,15 +86,15 @@
 		if (e?.Event == EventEnum.RefreshFlight)
 		{
 			flights = FlightService.Flights.Values.ToList();
-			flightCount = flights.Count;
+			SetFlightCount();
 			StateHasChanged();
 		}
 	}
 
 	private Task OpenNewFlightDialog()
 	{
-		 var options = new DialogOptions { CloseOnEscapeKey = true };
-		 return DialogService.ShowAsync<NewFlight>("", options);
+		var options = new DialogOptions { CloseOnEscapeKey = true };
+		return DialogService.ShowAsync<NewFlight>("", options);
 	}
 
 	private string GetPlaneName(Guid planeId)
@@ -95,5 +104,11 @@
 			return plane.Name;
 		}
 		return "";
+	}
+
+	private void SetFlightCount()
+	{
+		flightCount = FlightService.TotalFlights();
+		flightThisYear = FlightService.TotalFlights(DateTime.Now.Year);
 	}
 }

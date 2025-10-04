@@ -8,7 +8,7 @@ using RcTracking.TestDoubles.Mocks;
 namespace BenchmarkSuite1
 {
     [MemoryDiagnoser]
-    public class PlaneService_LoadPlanes_Benchmark
+    public class PlaneServiceLoadPlanesBenchmark
     {
         private MockPlaneService _planeService;
         private List<PlaneModel> _apiReturn;

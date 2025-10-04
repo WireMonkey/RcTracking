@@ -10,7 +10,7 @@ using RcTracking.TestDoubles.Mocks;
 namespace BenchmarkSuite1
 {
     [MemoryDiagnoser]
-    public class CombineDataService_Grouping_Benchmark
+    public class CombineDataServiceGroupingBenchmark
     {
         private MockFlightService _flightService;
         private MockPlaneService _planeService;

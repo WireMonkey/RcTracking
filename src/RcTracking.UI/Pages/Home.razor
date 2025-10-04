@@ -14,7 +14,7 @@
 	<MudItem xs="6">
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" GutterBottom="true">This Year</MudText>
-			0
+			@flightsThisYear
 		</MudPaper>
 	</MudItem>
 	<MudItem xs="6">
@@ -40,9 +40,14 @@
 	private IPlaneService PlaneService { get; set; }
 
 	[Inject]
+	private ICombineDataService CombineDataService { get; set; }
+
+	[Inject]
 	private EventBus EventBus { get; set; }
 
 	private int flightCount { get; set; } = 0;
+	
+	private int flightsThisYear { get; set; } = 0;
 
 	private int planeCount { get; set; } = 0;
 
@@ -60,7 +65,8 @@
 		switch (e?.Event)
 		{
 			case EventEnum.RefreshFlight:
-				flightCount = FlightService.Flights?.Count ?? 0;
+				flightCount = FlightService.TotalFlights();
+				flightsThisYear = FlightService.TotalFlights(DateTime.Now.Year);
 				InvokeAsync(StateHasChanged);
 				break;
 			case EventEnum.RefreshPlane:
@@ -80,7 +86,8 @@
 		}
 		else
 		{
-			flightCount = FlightService.Flights?.Count ?? 0;
+			flightCount = FlightService.TotalFlights();
+			flightsThisYear = FlightService.TotalFlights(DateTime.Now.Year);
 		}
 	}
 
