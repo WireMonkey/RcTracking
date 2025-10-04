@@ -23,6 +23,8 @@
 		</MudCard>
 	</MudItem>
 
+
+
 	@foreach(var plane in planes) 
 	{
 		<MudItem xs="3">
@@ -32,9 +34,11 @@
 				</MudCardHeader>
 				<MudCardContent>
 					<MudText Typo="Typo.body2" GutterBottom="true">Battery: </MudText>
-					<MudText Typo="Typo.body2" GutterBottom="true">Motor: </MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Prop: </MudText>
 					<MudText Typo="Typo.body2" GutterBottom="true">Flying: </MudText>
 				</MudCardContent>
+
+				@* Add button to open detail view that has all values and stats *@
 			</MudCard>
 		</MudItem>
 	}
