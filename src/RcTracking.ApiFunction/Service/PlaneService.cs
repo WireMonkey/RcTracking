@@ -15,7 +15,7 @@ namespace RcTracking.ApiFunction.Service
 
         public async Task<PlaneModel> CreatePlaneAsync(PlaneModel plane)
         {
-            var dbRec = PlaneModel.CreateDbRec(plane.Name);
+            var dbRec = PlaneModel.CreateDbRec(plane);
             await _dbContext.AddAsync(dbRec);
             await _dbContext.SaveChangesAsync();
             return dbRec;

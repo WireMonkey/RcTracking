@@ -32,13 +32,13 @@
 				<MudCardHeader>
 					<MudText Typo="Typo.h6" GutterBottom="true">@plane.Name</MudText>
 				</MudCardHeader>
-				<MudCardContent>
-					<MudText Typo="Typo.body2" GutterBottom="true">Battery: </MudText>
-					<MudText Typo="Typo.body2" GutterBottom="true">Prop: </MudText>
-					<MudText Typo="Typo.body2" GutterBottom="true">Flying: </MudText>
+				<MudCardContent align-content-start>
+					<MudSwitch @bind-Value="plane.Flying" Label="Flying: " Color="Color.Primary" Disabled="true" LabelPlacement="Placement.Start" />
+					<MudText GutterBottom="true">Flights: @PlaneFlights(plane.Id)</MudText>
 				</MudCardContent>
-
-				@* Add button to open detail view that has all values and stats *@
+				<MudCardActions>
+					<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="OpenDetailDialog">Details</MudButton>
+				</MudCardActions>
 			</MudCard>
 		</MudItem>
 	}
@@ -89,5 +89,15 @@
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
 		return DialogService.ShowAsync<NewPlane>("", options);
+	}
+
+	private int PlaneFlights(Guid id)
+	{
+		return CombineDataService.PlaneStats.TryGetValue(id, out var stats) ? stats.TotalFlights : 0;
+	}
+
+	private void OpenDetailDialog()
+	{
+		Console.WriteLine("Open detail page");
 	}
 }

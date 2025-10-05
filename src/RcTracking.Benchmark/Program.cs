@@ -8,7 +8,7 @@ namespace BenchmarkSuite2
         static void Main(string[] args)
         {
             // Run only our specific sorting benchmark
-            BenchmarkRunner.Run<FlightService_SortByDate_Benchmark>();
+            BenchmarkRunner.Run<FlightServiceSortByDateBenchmark>();
         }
     }
 }
