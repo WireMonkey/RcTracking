@@ -1,5 +1,7 @@
-﻿using RcTracking.Shared.Model;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using RcTracking.Shared.Model;
 using RcTracking.UI.Events;
+using RcTracking.UI.Helper;
 using RcTracking.UI.Interface;
 using System.Net.Http.Json;
 
@@ -9,11 +11,32 @@ namespace RcTracking.UI.Services
     {
         private readonly string _apiUrl;
         private readonly EventBus _eventBus;
+        private readonly IAccessTokenProvider _accessTokenProvider;
 
-        public FlightService(IConfiguration configuration, EventBus eventBus)
+        public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider)
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
+        }
+
+        // Backward-compatible overload used by unit tests which don't need an access token provider
+        public FlightService(IConfiguration configuration, EventBus eventBus)
+            : this(configuration, eventBus, new DefaultAccessTokenProvider())
+        {
+        }
+
+        private class DefaultAccessTokenProvider : IAccessTokenProvider
+        {
+            public ValueTask<AccessTokenResult> RequestAccessToken()
+            {
+                return new ValueTask<AccessTokenResult>(default(AccessTokenResult));
+            }
+
+            public ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
+            {
+                return new ValueTask<AccessTokenResult>(default(AccessTokenResult));
+            }
         }
 
         private Dictionary<Guid, FlightModel> _flights { get; set; } = new();
@@ -30,7 +53,7 @@ namespace RcTracking.UI.Services
 
         public async Task LoadFlightsAsync()
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.GetAsync($"{_apiUrl}flight");
             if (response.IsSuccessStatusCode)
             {
@@ -51,7 +74,7 @@ namespace RcTracking.UI.Services
 
         public async Task AddFlightAsync(FlightModel flight)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.PostAsJsonAsync($"{_apiUrl}flight", flight);
             if (response.IsSuccessStatusCode)
             {
@@ -78,7 +101,7 @@ namespace RcTracking.UI.Services
 
         public async Task UpdateFlightAsync(FlightModel flight)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.PutAsJsonAsync($"{_apiUrl}flight/{flight.Id}", flight);
             if (response.IsSuccessStatusCode)
             {
@@ -101,7 +124,7 @@ namespace RcTracking.UI.Services
 
         public async Task DeleteFlightAsync(Guid flightId)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.DeleteAsync($"{_apiUrl}flight/{flightId}");
             if (response.IsSuccessStatusCode)
             {
@@ -168,6 +191,5 @@ namespace RcTracking.UI.Services
                 _flights[flight.Id] = flight;
             }
         }
-
     }
 }

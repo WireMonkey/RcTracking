@@ -1,5 +1,7 @@
-﻿using RcTracking.Shared.Model;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using RcTracking.Shared.Model;
 using RcTracking.UI.Events;
+using RcTracking.UI.Helper;
 using RcTracking.UI.Interface;
 using System.Net.Http.Json;
 
@@ -9,11 +11,32 @@ namespace RcTracking.UI.Services
     {
         private readonly string _apiUrl;
         private readonly EventBus _eventBus;
+        private readonly IAccessTokenProvider _accessTokenProvider;
 
-        public PlaneService(IConfiguration configuration, EventBus eventBus)
+        public PlaneService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider )
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
+        }
+
+        // Backward-compatible overload used by unit tests
+        public PlaneService(IConfiguration configuration, EventBus eventBus)
+            : this(configuration, eventBus, new DefaultAccessTokenProvider())
+        {
+        }
+
+        private class DefaultAccessTokenProvider : IAccessTokenProvider
+        {
+            public ValueTask<AccessTokenResult> RequestAccessToken()
+            {
+                return new ValueTask<AccessTokenResult>(default(AccessTokenResult));
+            }
+
+            public ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
+            {
+                return new ValueTask<AccessTokenResult>(default(AccessTokenResult));
+            }
         }
 
         private Dictionary<Guid, PlaneModel> _planes { get; set; } = new();
@@ -30,7 +53,7 @@ namespace RcTracking.UI.Services
 
         public async Task LoadPlanesAsync()
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.GetAsync($"{_apiUrl}plane");
             if (response.IsSuccessStatusCode)
             {
@@ -55,7 +78,7 @@ namespace RcTracking.UI.Services
 
         public async Task AddPlaneAsync(PlaneModel plane)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.PostAsJsonAsync($"{_apiUrl}plane", plane);
             if (response.IsSuccessStatusCode)
             {
@@ -75,7 +98,7 @@ namespace RcTracking.UI.Services
 
         public async Task UpdatePlaneAsync(PlaneModel plane)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.PutAsJsonAsync($"{_apiUrl}plane/{plane.Id}", plane);
             if (response.IsSuccessStatusCode)
             {
@@ -95,7 +118,7 @@ namespace RcTracking.UI.Services
 
         public async Task DeletePlaneAsync(Guid planeId)
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
             var response = await httpClient.DeleteAsync($"{_apiUrl}plane/{planeId}");
             if (response.IsSuccessStatusCode)
             {

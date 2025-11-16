@@ -2,16 +2,16 @@
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.0" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>ea13d06e-559d-4958-88dc-908f20c64dab</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="9.5.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.0.0" />
     <PackageReference Include="Aspire.Hosting.Azure.Functions" Version="9.5.0-preview.1.25474.7" />
-    <PackageReference Include="Aspire.Hosting.Yarp" Version="9.4.2-preview.1.25428.12" />
+    <PackageReference Include="Aspire.Hosting.Yarp" Version="13.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ApiFunction\RcTracking.ApiFunction.csproj" />

@@ -19,7 +19,7 @@ public class PlaneFunction
     }
 
     [Function("Plane")]
-    public async Task<IActionResult> Plane([HttpTrigger(AuthorizationLevel.Function, "get", "post", "put", "delete")] HttpRequest req)
+    public async Task<IActionResult> Plane([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "put", "delete")] HttpRequest req)
     {
         var verb = req.Method.ToLower();
         _logger.LogInformation("C# HTTP trigger function processed a request. Verb: {Verb}.", verb);
