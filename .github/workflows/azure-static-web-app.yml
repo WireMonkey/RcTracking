@@ -32,6 +32,8 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_GLACIER_04001E210 }} # set this secret in your repo settings
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (required)
           action: "upload"
-          app_location: "src/RcTracking.UI" # App source location
+          skip_app_build: true
+          skip_api_build: true
+          app_location: "src/RcTracking.UI/publish/wwwroot" # App source location
+          output_location: ""
           api_location: "" # No Functions API in this workflow (set if you have one)
-          app_artifact_location: "src/RcTracking.UI/publish/wwwroot" # The folder the publish step produces
