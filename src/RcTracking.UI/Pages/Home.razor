@@ -3,6 +3,7 @@
 @using RcTracking.UI.Events
 @using RcTracking.UI.Interface
 @using RcTracking.UI.Services
+@using Microsoft.Authentication.WebAssembly.Msal;
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
 	<MudItem xs="6">
@@ -52,17 +53,33 @@
 	[Inject]
 	private EventBus EventBus { get; set; }
 
+	[Inject]
+	private AuthenticationStateProvider authenticationStateProvider { get; set; }
+
+	[Inject]
+	private NavigationManager navigationManager { get; set; }
+
 	private int flightCount { get; set; } = 0;
-	
+
 	private int flightsThisYear { get; set; } = 0;
 
 	private int planeCount { get; set; } = 0;
 
 	protected override async Task OnInitializedAsync()
 	{
-		EventBus.OnMessage += OnMessage;
-		await loadFlights();
-		await loadPlanes();
+		Console.WriteLine("Home. OnInitializedAsync");
+		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+		if (authState.User.Identity is not null && authState.User.Identity.IsAuthenticated)
+		{
+			EventBus.OnMessage += OnMessage;
+			await loadFlights();
+			await loadPlanes();
+		}
+		else
+		{
+			navigationManager.NavigateTo("authentication/login");
+		}
+
 	}
 
 	private void OnMessage(object? sender, EventMessage? e)
