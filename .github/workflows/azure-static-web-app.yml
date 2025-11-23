@@ -54,5 +54,12 @@ jobs:
           skip_app_build: true
           skip_api_build: true
           app_location: "src/RcTracking.UI/publish/wwwroot" # App source location
-          api_location: "src/RcTracking.ApiFunction/publish"
+          api_location: ""
           output_location: ""
+          
+      - name: Azure Functions Action
+        uses: Azure/functions-action@v1.5.3
+        with:
+          app-name: 'Rc-Tracking-api'
+          package: ./src/RcTracking.UI/publish
+          slot-name: 'Production'
