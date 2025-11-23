@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release
-          path: ./src/RcTracking.ApiFunction/publish
+          path: ./src/RcTracking.UI/publish
           retention-days: 1
                       
       - name: Deploy to Azure Static Web Apps
@@ -52,7 +52,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (required)
           action: "upload"
           skip_app_build: true
-          skip_api_build: true
+          skip_api_build: false
           app_location: "src/RcTracking.UI/publish/wwwroot" # App source location
-          api_location: "src/RcTracking.ApiFunction/publish"
+          api_location: "src/RcTracking.ApiFunction"
           output_location: ""
