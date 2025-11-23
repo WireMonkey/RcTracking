@@ -19,22 +19,22 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-          
-      - name: Check folder path
-        run: echo ${github_workspace}src/RcTracking.UI/wwwroot/
-        
-      - name: Update appsettings
-        uses: restackio/update-json-file-action@2.1
-        with:
-           file: ./src/RcTracking.UI/wwwroot/appsettings.json
-           fields: "{\"AzureAd.Authority\": \"${{ secrets.AZURE_AD_AUTHORITY }}\", \"AzureAd.ClientId\": \"${{ secrets.AZURE_AD_CLIENT_ID }}\"}"
-                      
+         
       - name: Restore dependencies
         run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj
 
       - name: Publish Blazor WebAssembly (Release)
         run: dotnet publish src/RcTracking.UI/RcTracking.UI.csproj -c Release -o src/RcTracking.UI/publish
 
+      - name: check file path
+        run: ls ./src/RcTracking.UI/publish
+
+      - name: Update appsettings
+        uses: restackio/update-json-file-action@2.1
+        with:
+           file: ./src/RcTracking.UI/publish/wwwroot/appsettings.json
+           fields: "{\"AzureAd.Authority\": \"${{ secrets.AZURE_AD_AUTHORITY }}\", \"AzureAd.ClientId\": \"${{ secrets.AZURE_AD_CLIENT_ID }}\"}"
+                      
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
