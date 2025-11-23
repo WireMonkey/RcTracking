@@ -21,7 +21,13 @@ jobs:
           dotnet-version: '10.0.x'
           
       - name: Check folder path
-        run: ls ${github_workspace}src/RcTracking.UI/wwwroot/        
+        run: ls ${github_workspace}src/RcTracking.UI/wwwroot/
+        
+      - name: Update appsettings
+        uses: restackio/update-json-file-action@2.1
+        with:
+           file: ${github_workspace}src/RcTracking.UI/wwwroot/appsettings.json
+           fields: "{\"AzureAd.Authority\": \"${{ secrets.AZURE_AD_AUTHORITY }}\", \"AzureAd.ClientId\": \"${{ secrets.AZURE_AD_CLIENT_ID }}\"}"
       
       - name: Restore dependencies
         run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj
