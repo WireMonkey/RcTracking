@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '10.0.x'
           
       - name: Check folder path
-        run: ls ${github_workspace}src/RcTracking.UI/        
+        run: ls ${github_workspace}src/RcTracking.UI/wwwroot/        
       
       - name: Restore dependencies
         run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj
