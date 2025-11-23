@@ -57,6 +57,13 @@ jobs:
           api_location: ""
           output_location: ""
           
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A9588D6AC3964F9B947C31D577013DFA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B14B9F9592E745E898F52EE61585E174 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_99CB91E3A1C04EB48429E153C7E57AB6 }}
+          
       - name: Azure Functions Action
         uses: Azure/functions-action@v1.5.3
         with:
