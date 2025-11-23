@@ -19,9 +19,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-         
-      - name: Restore dependencies
-        run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj
+          
+      - name: Restore Api dependencies
+        run: dotnet restore src/RcTracking.ApiFunction/RcTracking.ApiFunction.csproj 
+        
+      - name: Publish Azure functions
+        run: dotnet publish src/RcTracking.ApiFunction/RcTracking.ApiFunction.csproj  -c Release -o src/RcTracking.ApiFunction/publish
+        
+      - name: Restore Ui dependencies
+        run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj      
 
       - name: Update appsettings
         uses: restackio/update-json-file-action@2.1
@@ -48,5 +54,5 @@ jobs:
           skip_app_build: true
           skip_api_build: true
           app_location: "src/RcTracking.UI/publish/wwwroot" # App source location
+          api_location: "src/RcTracking.ApiFunction/publish"
           output_location: ""
-          api_location: "" # No Functions API in this workflow (set if you have one)
