@@ -26,7 +26,7 @@ jobs:
       - name: Edit JSON
         uses: sebasptsch/json-edit-action@v1.3.1
         with:
-          path: "${{github_workspace}}src/RcTracking.UI/wwwroot/appsettings.json"
+          path: "${github_workspace}src/RcTracking.UI/wwwroot/appsettings.json"
           key: AzureAd.ClientId
           value: ${secrets.AZURE_AD_CLIENT_ID}
                       
