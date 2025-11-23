@@ -28,7 +28,7 @@ jobs:
         with:
           path: ./src/RcTracking.UI/wwwroot/appsettings.json
           key: AzureAd.ClientId
-          value: ${secrets.AZURE_AD_CLIENT_ID}
+          value: ${{ secrets.AZURE_AD_CLIENT_ID }}
                       
       - name: Restore dependencies
         run: dotnet restore src/RcTracking.UI/RcTracking.UI.csproj
