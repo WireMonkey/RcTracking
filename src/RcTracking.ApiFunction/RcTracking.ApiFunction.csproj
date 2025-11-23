@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="staticwebapp.config.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 		
     <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.0.0" />
@@ -40,6 +44,12 @@
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ServiceDefaults\RcTracking.ServiceDefaults.csproj" />
     <ProjectReference Include="..\RcTracking.Shared\RcTracking.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="staticwebapp.config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

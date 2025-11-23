@@ -1,0 +1,16 @@
+{
+  "trailingSlash": "auto",
+  "routes": [
+    {
+      "route": "/api/*",
+      "methods": [ "PUT", "POST", "PATCH", "DELETE" ],
+      "allowedRoles": [ "authenticated" ]
+    }
+  ],
+  "globalHeaders": {
+    "content-security-policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'"
+  },
+  "platform": {
+    "apiRuntime": "dotnet:6.0"
+  }
+}
