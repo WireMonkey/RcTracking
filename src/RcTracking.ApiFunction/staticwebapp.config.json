@@ -11,6 +11,6 @@
     "content-security-policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'"
   },
   "platform": {
-    "apiRuntime": "dotnet:6.0"
+    "apiRuntime": "dotnet-isolated:10.0"
   }
 }
