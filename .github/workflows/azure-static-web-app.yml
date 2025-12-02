@@ -10,6 +10,9 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     name: Build and deploy RcTracking.UI to Azure Static Web Apps
+    permissions:
+      id-token: write 
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -33,7 +36,7 @@ jobs:
         uses: restackio/update-json-file-action@2.1
         with:
            file: ./src/RcTracking.UI/wwwroot/appsettings.json
-           fields: "{\"AzureAd.Authority\": \"${{ secrets.AZURE_AD_AUTHORITY }}\", \"AzureAd.ClientId\": \"${{ secrets.AZURE_AD_CLIENT_ID }}\"}"
+           fields: "{\"AzureAd.Authority\": \"${{ secrets.AZURE_AD_AUTHORITY }}\", \"AzureAd.ClientId\": \"${{ secrets.AZURE_AD_CLIENT_ID }}\", \"apiUrl\": \"${{ secrets.RC_TRACKING_API_URL }}\"}"
               
       - name: Publish Blazor WebAssembly (Release)
         run: dotnet publish src/RcTracking.UI/RcTracking.UI.csproj -c Release -o src/RcTracking.UI/publish
@@ -42,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release
-          path: ./src/RcTracking.UI/publish
+          path: ./src/RcTracking.ApiFunction/publish
           retention-days: 1
                       
       - name: Deploy to Azure Static Web Apps
@@ -52,7 +55,21 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (required)
           action: "upload"
           skip_app_build: true
-          skip_api_build: false
+          skip_api_build: true
           app_location: "src/RcTracking.UI/publish/wwwroot" # App source location
-          api_location: "src/RcTracking.ApiFunction"
+          api_location: ""
           output_location: ""
+          
+#      - name: Login to Azure
+#        uses: azure/login@v2
+#        with:
+#          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A9588D6AC3964F9B947C31D577013DFA }}
+#          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B14B9F9592E745E898F52EE61585E174 }}
+#          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_99CB91E3A1C04EB48429E153C7E57AB6 }}
+          
+#      - name: Azure Functions Action
+#        uses: Azure/functions-action@v1.5.3
+#        with:
+#          app-name: 'Rc-Tracking-api'
+#          package: ./src/RcTracking.UI/publish
+#          slot-name: 'Production'
