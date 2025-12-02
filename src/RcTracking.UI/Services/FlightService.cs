@@ -10,12 +10,14 @@ namespace RcTracking.UI.Services
     public class FlightService : IFlightService
     {
         private readonly string _apiUrl;
+        private readonly string _apiKey;
         private readonly EventBus _eventBus;
         private readonly IAccessTokenProvider _accessTokenProvider;
 
         public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider)
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
+            _apiKey = configuration.GetValue<string>("apiKey") ?? throw new ArgumentNullException(nameof(configuration), "apiKey is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
         }
@@ -53,7 +55,7 @@ namespace RcTracking.UI.Services
 
         public async Task LoadFlightsAsync()
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.GetAsync($"{_apiUrl}flight");
             if (response.IsSuccessStatusCode)
             {
@@ -74,7 +76,7 @@ namespace RcTracking.UI.Services
 
         public async Task AddFlightAsync(FlightModel flight)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.PostAsJsonAsync($"{_apiUrl}flight", flight);
             if (response.IsSuccessStatusCode)
             {
@@ -101,7 +103,7 @@ namespace RcTracking.UI.Services
 
         public async Task UpdateFlightAsync(FlightModel flight)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.PutAsJsonAsync($"{_apiUrl}flight/{flight.Id}", flight);
             if (response.IsSuccessStatusCode)
             {
@@ -124,7 +126,7 @@ namespace RcTracking.UI.Services
 
         public async Task DeleteFlightAsync(Guid flightId)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _accessTokenProvider);
+            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.DeleteAsync($"{_apiUrl}flight/{flightId}");
             if (response.IsSuccessStatusCode)
             {

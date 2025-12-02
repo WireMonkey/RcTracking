@@ -5,7 +5,7 @@ namespace RcTracking.UI.Helper
 {
     public static class HttpClientHelper
     {
-        public static async Task<HttpClient> CreateHttpClient(string apiUrl, IAccessTokenProvider accessTokenProvider)
+        public static async Task<HttpClient> CreateHttpClient(string apiUrl, string functionKey, IAccessTokenProvider accessTokenProvider)
         {
             var accessToken = await GetAccessTokenAsync(accessTokenProvider);
             var httpClient = new HttpClient
@@ -13,6 +13,7 @@ namespace RcTracking.UI.Helper
                 BaseAddress = new Uri(apiUrl)
             };
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            httpClient.DefaultRequestHeaders.Add("x-functions-key", functionKey);
 
             return httpClient;
         }
