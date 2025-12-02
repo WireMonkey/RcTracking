@@ -38,9 +38,17 @@ public class PlaneFunction
         var id = req.Query["id"].ToString();
         _logger.LogInformation("Get processing with, Id: {Id}", id);
 
-        var result = string.IsNullOrWhiteSpace(id) ? new OkObjectResult(await _planeService.GetPlanesAsync())
-            : new OkObjectResult(await _planeService.GetPlaneAsync(Guid.Parse(id)));
-        return result;
+        try
+        {
+            var result = string.IsNullOrWhiteSpace(id) ? new OkObjectResult(await _planeService.GetPlanesAsync())
+                : new OkObjectResult(await _planeService.GetPlaneAsync(Guid.Parse(id)));
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception: {ex} Id: {Id}", ex, id);
+            return new BadRequestObjectResult(ex.ToString());
+        }
     }
 
     private async Task<IActionResult> Post(HttpRequest req)
@@ -51,8 +59,16 @@ public class PlaneFunction
             return new BadRequestObjectResult("Please pass a valid body");
         }
 
-        var result = await _planeService.CreatePlaneAsync(body);
-        return new OkObjectResult(result);
+        try
+        {
+            var result = await _planeService.CreatePlaneAsync(body);
+            return new OkObjectResult(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception: {ex} Body: {Body}", ex, body);
+            return new BadRequestObjectResult(ex.ToString());
+        }
     }
 
     private async Task<IActionResult> Put(HttpRequest req)
@@ -72,6 +88,11 @@ public class PlaneFunction
         {
             return new BadRequestObjectResult("Please pass a valid key");
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception: {ex} Body: {Body}", ex, body);
+            return new BadRequestObjectResult(ex.ToString());
+        }
     }
 
     private async Task<IActionResult> Delete(HttpRequest req)
@@ -90,6 +111,11 @@ public class PlaneFunction
         catch (KeyNotFoundException)
         {
             return new BadRequestObjectResult("Please pass a valid key");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception: {ex}", ex);
+            return new BadRequestObjectResult(ex.ToString());
         }
     }
 }
