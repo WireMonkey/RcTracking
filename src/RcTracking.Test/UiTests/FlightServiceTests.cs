@@ -16,7 +16,15 @@ public class FlightServiceTests
                 {"apiUrl", "http://localhost/"}
             })
             .Build();
-        return new FlightService(config, new EventBus());
+        // Provide default/null values for all required FlightService constructor parameters
+        // (apiUrl, apiKey, eventBus, accessTokenProvider, snackbarService)
+        return new FlightService(
+            config["apiUrl"] ?? string.Empty,
+            string.Empty, // apiKey
+            new EventBus(),
+            null!,        // IAccessTokenProvider (use null-forgiving operator for test)
+            null!         // ISnackbar (use null-forgiving operator for test)
+        );
     }
 
     private static FlightModel NewFlight(int flightCount = 1) => new(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid(), flightCount, "test");

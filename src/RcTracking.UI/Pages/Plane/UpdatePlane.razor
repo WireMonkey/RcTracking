@@ -1,0 +1,56 @@
+﻿@using RcTracking.Shared.Model
+@using RcTracking.UI.Interface
+
+<MudDialog>
+	<TitleContent>
+		Update Plane
+	</TitleContent>
+	<DialogContent>
+		<MudGrid Spacing="3">
+			<MudItem xs="12">
+				<MudTextField @bind-Value="Plane.Name" Label="Name" Variant="Variant.Filled" FullWidth="true" Disabled="true" />
+			</MudItem>
+			<MudItem xs="4">
+				<MudTextField @bind-Value="Plane.Propeller" Label="Prop" Variant="Variant.Filled" FullWidth="true" />
+			</MudItem>
+			<MudItem xs="4">
+				<MudTextField @bind-Value="Plane.Battery" Label="Battery" Variant="Variant.Filled" FullWidth="true" />
+			</MudItem>
+			<MudItem xs="4" justify-center>
+				<MudSwitch @bind-Value="Plane.Flying" Label="Flying" Color="Color.Primary" LabelPlacement="Placement.Start" />
+			</MudItem>
+			<MudItem xs="12">
+				<MudTextField @bind-Value="Plane.Notes" T="string" Label="Notes" Variant="Variant.Text" Lines="5" />
+			</MudItem>
+		</MudGrid>
+		<MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true" />
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter]
+	private IMudDialogInstance MudDialog { get; set; }
+
+	[Inject]
+	private IPlaneService PlaneService { get; set; }
+
+	[Parameter]
+	public PlaneModel Plane { get; init; }
+
+	private bool _visible = false;
+
+
+	private void Cancel() => MudDialog.Cancel();
+
+	private async Task Submit()
+	{
+		_visible = true;
+		await PlaneService.UpdatePlaneAsync(Plane);
+		MudDialog.Close(DialogResult.Ok(true));
+		_visible = false;
+	}
+}

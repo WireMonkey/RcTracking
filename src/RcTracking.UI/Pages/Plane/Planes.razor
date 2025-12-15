@@ -37,7 +37,7 @@
 					<MudText GutterBottom="true">Flights: @PlaneFlights(plane.Id)</MudText>
 				</MudCardContent>
 				<MudCardActions>
-					<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="OpenDetailDialog">Details</MudButton>
+					<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => OpenDetailDialog(plane)">Details</MudButton>
 				</MudCardActions>
 			</MudCard>
 		</MudItem>
@@ -77,7 +77,9 @@
 	{
 		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
 
-		if (e?.Event == EventEnum.RefreshPlane || e.Event == EventEnum.PlaneUpdated)
+		if (e?.Event == EventEnum.RefreshPlane || 
+			e.Event == EventEnum.PlaneUpdated || 
+			e.Event == EventEnum.PlaneAdded)
 		{
 			planes = PlaneService.Planes.Values.ToList();
 			planeCount = planes.Count;
@@ -96,8 +98,9 @@
 		return CombineDataService.PlaneStats.TryGetValue(id, out var stats) ? stats.TotalFlights : 0;
 	}
 
-	private void OpenDetailDialog()
+	private Task OpenDetailDialog(PlaneModel plane)
 	{
-		Console.WriteLine("Open detail page");
+		var options = new DialogOptions { CloseOnEscapeKey = true };
+		return DialogService.ShowAsync<UpdatePlane>("", new DialogParameters { { "Plane", plane } }, options);
 	}
 }

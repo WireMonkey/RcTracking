@@ -8,6 +8,6 @@ namespace RcTracking.ApiFunction.Interface
         Task DeletePlaneAsync(Guid id);
         Task<IEnumerable<PlaneModel>> GetPlanesAsync();
         Task<PlaneModel?> GetPlaneAsync(Guid id);
-        Task<PlaneModel> UpdatePlaneAsync(Guid id, string name);
+        Task<PlaneModel> UpdatePlaneAsync(Guid id, PlaneModel plane);
     }
 }

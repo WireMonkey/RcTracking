@@ -79,10 +79,10 @@ public class PlaneFunction
             return new BadRequestObjectResult("Please pass a valid body");
         }
 
-        _logger.LogInformation("Put processing with, Id: {Id}, Name: {Name}", body.Id,body.Name);
+        _logger.LogInformation("Put processing with, Id: {Id}.", body.Id);
         try
         {
-            return new OkObjectResult(await _planeService.UpdatePlaneAsync(body.Id, body.Name));
+            return new OkObjectResult(await _planeService.UpdatePlaneAsync(body.Id, body));
         }
         catch (KeyNotFoundException)
         {

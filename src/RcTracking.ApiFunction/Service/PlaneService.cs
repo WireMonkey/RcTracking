@@ -44,16 +44,16 @@ namespace RcTracking.ApiFunction.Service
             return await list;
         }
 
-        public async Task<PlaneModel> UpdatePlaneAsync(Guid id, string name)
+        public async Task<PlaneModel> UpdatePlaneAsync(Guid id, PlaneModel plane)
         {
-            var plane = await _dbContext.FindAsync<PlaneModel>(id);
-            if (plane == null)
+            var uPlane = await _dbContext.FindAsync<PlaneModel>(id);
+            if (uPlane == null)
             {
                 throw new KeyNotFoundException($"Plane with id {id} not found");
             }
-            plane.Name = name;
+            PlaneModel.UpdateDbRec(uPlane, plane);
             await _dbContext.SaveChangesAsync();
-            return plane;
+            return uPlane;
         }
     }
 }

@@ -6,6 +6,12 @@
 @using Microsoft.Authentication.WebAssembly.Msal;
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
+	@if (!FlightService.HasLoaded || !PlaneService.HasLoaded)
+	{
+		<MudItem xs="12">
+			<MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+		</MudItem>
+	}
 	<MudItem xs="6">
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" GutterBottom="true">Total Flights</MudText>
@@ -87,11 +93,13 @@
 
 		switch (e?.Event)
 		{
+			case EventEnum.FlightAdded:
 			case EventEnum.RefreshFlight:
 				flightCount = FlightService.TotalFlights();
 				flightsThisYear = FlightService.TotalFlights(DateTime.Now.Year);
 				InvokeAsync(StateHasChanged);
 				break;
+			case EventEnum.PlaneAdded:
 			case EventEnum.RefreshPlane:
 				planeCount = PlaneService.Planes?.Count ?? 0;
 				InvokeAsync(StateHasChanged);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using MudBlazor;
 using RcTracking.Shared.Model;
 using RcTracking.UI.Events;
 using RcTracking.UI.Helper;
@@ -13,18 +14,21 @@ namespace RcTracking.UI.Services
         private readonly string _apiKey;
         private readonly EventBus _eventBus;
         private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly ISnackbar _snackbarService;
+        private bool _hasLoaded = false;
 
-        public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider)
+        public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService)
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
             _apiKey = configuration.GetValue<string>("apiKey") ?? throw new ArgumentNullException(nameof(configuration), "apiKey is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
+            _snackbarService = snackbarService ?? throw new ArgumentNullException(nameof(snackbarService));
         }
 
         // Backward-compatible overload used by unit tests which don't need an access token provider
-        public FlightService(IConfiguration configuration, EventBus eventBus)
-            : this(configuration, eventBus, new DefaultAccessTokenProvider())
+        public FlightService(IConfiguration configuration, EventBus eventBus, ISnackbar snackbarService)
+            : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService)
         {
         }
 
@@ -51,10 +55,11 @@ namespace RcTracking.UI.Services
             }
         }
 
-        public bool HasLoaded => _flights.Count != 0;
+        public bool HasLoaded { get => _hasLoaded; }
 
         public async Task LoadFlightsAsync()
         {
+            _snackbarService.Add("Loading flights");
             using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.GetAsync($"{_apiUrl}flight");
             if (response.IsSuccessStatusCode)
@@ -65,13 +70,17 @@ namespace RcTracking.UI.Services
                         {
                             PropertyNameCaseInsensitive = true
                         }));
-                if (apiReturn is not null)
+                if (apiReturn is not null && apiReturn.Length > 0)
                 {
                     AddSortedFlights(apiReturn);
-
-                    _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                 }
+
+                _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
+                _hasLoaded = true;
+                return;
             }
+
+            _snackbarService.Add("Failed to load flights from API", Severity.Error);
         }
 
         public async Task AddFlightAsync(FlightModel flight)
@@ -94,11 +103,15 @@ namespace RcTracking.UI.Services
                     {
                         dFlights[i + 1] = _flights.Values.ElementAt(i);
                     }
-                    
+
                     AddSortedFlights(dFlights);
+
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
+                    return;
                 }
             }
+
+            _snackbarService.Add("Failed to add flight to DB", Severity.Error);
         }
 
         public async Task UpdateFlightAsync(FlightModel flight)
@@ -119,9 +132,12 @@ namespace RcTracking.UI.Services
                     {
                         existingFlight.UpdateFrom(updatedFlight);
                         _eventBus.Message = new PlaneFlightAddedMessage { Event = EventEnum.RefreshPlane, PlaneId = updatedFlight.PlaneId };
+                        return;
                     }
                 }
             }
+
+            _snackbarService.Add("Failed to update flight in DB", Severity.Error);
         }
 
         public async Task DeleteFlightAsync(Guid flightId)
@@ -133,8 +149,11 @@ namespace RcTracking.UI.Services
                 if (_flights.Remove(flightId))
                 {
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
+                    return;
                 }
             }
+
+            _snackbarService.Add("Failed to delete flight from DB", Severity.Error);
         }
 
         public int TotalFlights()

@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using RcTracking.UI.Events
+@using RcTracking.UI.Services
+
+<div class="top-row ps-3 navbar navbar-dark">
 	<div class="container-fluid">
 		<a class="navbar-brand" href="">RcTracking.UI</a>
 		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -32,6 +35,12 @@
 </div>
 
 @code {
+    [Inject]
+    private EventBus EventBus { get; set; }
+
+    [Inject]
+    private ISnackbar snackbarService { get; set; }
+
 	private bool collapseNavMenu = true;
 
 	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
@@ -40,4 +49,28 @@
 	{
 		collapseNavMenu = !collapseNavMenu;
 	}
+
+
+    protected override void OnInitialized()
+    {
+        EventBus.OnMessage += OnMessage;
+    }
+
+    private void OnMessage(object? sender, EventMessage? e)
+    {
+        switch (e?.Event)
+        {
+            case EventEnum.FlightAdded:
+            case EventEnum.PlaneAdded:
+            case EventEnum.PlaneUpdated:
+                Console.WriteLine("Success!");
+                snackbarService.Add("Success!", Severity.Success);
+                break;
+            default:
+				break;
+
+		}
+        
+    }
 }
+

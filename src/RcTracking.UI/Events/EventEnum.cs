@@ -8,6 +8,5 @@
         FlightAdded,
         PlaneAdded,
         PlaneUpdated
-
     }
 }

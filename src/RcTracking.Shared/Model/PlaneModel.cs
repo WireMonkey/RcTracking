@@ -14,4 +14,13 @@ public class PlaneModel(Guid Id, string Name, string? Propeller = null, string? 
     public string? Notes { get; set; } = Notes;
 
     public static PlaneModel CreateDbRec(PlaneModel model) => new(Guid.NewGuid(), model.Name, model.Propeller, model.Battery, model.Notes, model.Flying);
+    public static PlaneModel UpdateDbRec(PlaneModel dbRec, PlaneModel model)
+    {
+        dbRec.Name = model.Name;
+        dbRec.Propeller = model.Propeller;
+        dbRec.Battery = model.Battery;
+        dbRec.Notes = model.Notes;
+        dbRec.Flying = model.Flying;
+        return dbRec;
+    }
 }
