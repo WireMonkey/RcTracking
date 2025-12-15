@@ -149,5 +149,10 @@ namespace RcTracking.UI.Services
 
             _snackbarService.Add("Failed to delete plane from DB", Severity.Error);
         }
+
+        public int WorkingPlanesCount()
+        {
+            return _planes.Values.Count(p => p.Flying);
+        }
     }
 }

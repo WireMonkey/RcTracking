@@ -33,7 +33,7 @@
 	<MudItem xs="6">
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" GutterBottom="true">Working Planes</MudText>
-			0
+			@workingPlaneCount
 		</MudPaper>
 	</MudItem>
 
@@ -71,6 +71,8 @@
 
 	private int planeCount { get; set; } = 0;
 
+	private int workingPlaneCount { get; set; } = 0;
+
 	protected override async Task OnInitializedAsync()
 	{
 		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
@@ -102,6 +104,7 @@
 			case EventEnum.PlaneAdded:
 			case EventEnum.RefreshPlane:
 				planeCount = PlaneService.Planes?.Count ?? 0;
+				workingPlaneCount = PlaneService.WorkingPlanesCount();
 				InvokeAsync(StateHasChanged);
 				break;
 			default:

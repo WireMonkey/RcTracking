@@ -10,5 +10,6 @@ namespace RcTracking.UI.Interface
         Task AddPlaneAsync(PlaneModel plane);
         Task UpdatePlaneAsync(PlaneModel plane);
         Task DeletePlaneAsync(Guid planeId);
+        int WorkingPlanesCount();
     }
 }
