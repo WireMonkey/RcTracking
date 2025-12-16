@@ -90,7 +90,8 @@
 	private Task OpenNewPlaneDialog()
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		return DialogService.ShowAsync<NewPlane>("", options);
+		var nPlane = new PlaneModel(Guid.Empty, "", "", "", "", false);
+		return DialogService.ShowAsync<UpdatePlane>("", new DialogParameters { { "Plane", nPlane }, { "Title", "New Plane" } }, options);
 	}
 
 	private int PlaneFlights(Guid id)
@@ -101,6 +102,6 @@
 	private Task OpenDetailDialog(PlaneModel plane)
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		return DialogService.ShowAsync<UpdatePlane>("", new DialogParameters { { "Plane", plane } }, options);
+		return DialogService.ShowAsync<UpdatePlane>("", new DialogParameters { { "Plane", plane }, { "Title", "New Plane" } }, options);
 	}
 }
