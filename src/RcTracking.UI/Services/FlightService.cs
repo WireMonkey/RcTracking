@@ -14,7 +14,7 @@ namespace RcTracking.UI.Services
         private readonly string _apiKey;
         private readonly EventBus _eventBus;
         private readonly IAccessTokenProvider _accessTokenProvider;
-        private readonly ISnackbar _snackbarService;
+        private readonly ISnackbar? _snackbarService;
         private bool _hasLoaded = false;
 
         public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService)
@@ -30,6 +30,16 @@ namespace RcTracking.UI.Services
         public FlightService(IConfiguration configuration, EventBus eventBus, ISnackbar snackbarService)
             : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService)
         {
+        }
+
+        // Overload that accepts raw apiUrl/apiKey used by unit tests
+        public FlightService(string apiUrl, string apiKey, EventBus eventBus, IAccessTokenProvider? accessTokenProvider, ISnackbar? snackbarService)
+        {
+            _apiUrl = apiUrl ?? throw new ArgumentNullException(nameof(apiUrl));
+            _apiKey = apiKey ?? string.Empty;
+            _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _accessTokenProvider = accessTokenProvider ?? new DefaultAccessTokenProvider();
+            _snackbarService = snackbarService; // may be null in unit tests; callers use null-conditional
         }
 
         private class DefaultAccessTokenProvider : IAccessTokenProvider
@@ -59,7 +69,7 @@ namespace RcTracking.UI.Services
 
         public async Task LoadFlightsAsync()
         {
-            _snackbarService.Add("Loading flights");
+            _snackbarService?.Add("Loading flights");
             using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.GetAsync($"{_apiUrl}flight");
             if (response.IsSuccessStatusCode)
@@ -80,7 +90,7 @@ namespace RcTracking.UI.Services
                 return;
             }
 
-            _snackbarService.Add("Failed to load flights from API", Severity.Error);
+            _snackbarService?.Add("Failed to load flights from API", Severity.Error);
         }
 
         public async Task AddFlightAsync(FlightModel flight)
@@ -111,7 +121,7 @@ namespace RcTracking.UI.Services
                 }
             }
 
-            _snackbarService.Add("Failed to add flight to DB", Severity.Error);
+            _snackbarService?.Add("Failed to add flight to DB", Severity.Error);
         }
 
         public async Task UpdateFlightAsync(FlightModel flight)
@@ -137,7 +147,7 @@ namespace RcTracking.UI.Services
                 }
             }
 
-            _snackbarService.Add("Failed to update flight in DB", Severity.Error);
+            _snackbarService?.Add("Failed to update flight in DB", Severity.Error);
         }
 
         public async Task DeleteFlightAsync(Guid flightId)
@@ -153,7 +163,7 @@ namespace RcTracking.UI.Services
                 }
             }
 
-            _snackbarService.Add("Failed to delete flight from DB", Severity.Error);
+            _snackbarService?.Add("Failed to delete flight from DB", Severity.Error);
         }
 
         public int TotalFlights()

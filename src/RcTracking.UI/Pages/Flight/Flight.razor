@@ -7,8 +7,8 @@
 
 @inject IDialogService DialogService
 
-<MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
-	<MudItem xs="2">
+<MudGrid Spacing="4" Justify="Justify.SpaceEvenly">
+	<MudItem md="6" lg="2">
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudText Typo="Typo.h5" GutterBottom="true">Total Flights</MudText>
@@ -16,7 +16,7 @@
 			</MudCardContent>
 		</MudCard>
 	</MudItem>
-	<MudItem xs="2">
+	<MudItem md="6" lg="2">
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudText Typo="Typo.h5" GutterBottom="true">This Year</MudText>
@@ -24,7 +24,7 @@
 			</MudCardContent>
 		</MudCard>
 	</MudItem>
-	<MudItem xs="8">
+	<MudItem md="6" lg="8">
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="OpenNewFlightDialog">Add Flight</MudButton>
@@ -32,9 +32,11 @@
 		</MudCard>
 	</MudItem>
 
+	<MudDivider DividerType="DividerType.Middle"></MudDivider>
+
 	@foreach (var flight in flights)
 	{
-		<MudItem xs="3">
+		<MudItem md="6" lg="3">
 			<MudCard Outlined="true">
 				<MudCardHeader>
 					<MudText Typo="Typo.h6" GutterBottom="true">@flight.FlightDate</MudText>
@@ -42,7 +44,7 @@
 				<MudCardContent>
 					<MudText Typo="Typo.body2" GutterBottom="true">Plane: @GetPlaneName(flight.PlaneId)</MudText>
 					<MudText Typo="Typo.body2" GutterBottom="true">Flight: @flight.FlightCount</MudText>
-					<MudText Typo="Typo.body2" GutterBottom="true">Notes: </MudText>
+					<MudText Typo="Typo.body2" GutterBottom="true">Notes: @flight.Notes</MudText>
 				</MudCardContent>
 			</MudCard>
 		</MudItem>

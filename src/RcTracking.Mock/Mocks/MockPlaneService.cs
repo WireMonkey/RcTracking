@@ -11,4 +11,5 @@ public class MockPlaneService : IPlaneService
     public Task AddPlaneAsync(PlaneModel plane) { Planes[plane.Id] = plane; return Task.CompletedTask; }
     public Task UpdatePlaneAsync(PlaneModel plane) { Planes[plane.Id] = plane; return Task.CompletedTask; }
     public Task DeletePlaneAsync(Guid planeId) { Planes.Remove(planeId); return Task.CompletedTask; }
+    public int WorkingPlanesCount() { return Planes.Values.Count(p => p.Flying); }
 }
