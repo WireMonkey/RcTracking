@@ -1,0 +1,84 @@
+﻿@using RcTracking.UI.Events
+@using RcTracking.UI.Interface
+@using RcTracking.UI.Services
+@using System.Linq
+<h3>Flights by Plane</h3>
+<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+
+@code {
+	[Inject]
+	private ICombineDataService CombineDataService { get; set; }
+
+	[Inject]
+	private IPlaneService PlaneService { get; set; }
+
+	[Inject]
+	private EventBus EventBus { get; set; }
+
+	private List<ChartSeries> Series { get; set; } = new();
+
+	private string[] Labels { get; set; }
+
+	private ChartOptions chartOptions { get; set; } = new();
+
+	private AxisChartOptions axisChartOptions { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		EventBus.OnMessage += OnMessage;
+		chartOptions.YAxisTicks = 1;
+		chartOptions.MaxNumYAxisTicks = 20;
+		chartOptions.ShowLegend = false;
+		axisChartOptions.MatchBoundsToSize = true;
+		axisChartOptions.StackedBarWidthRatio = .8;
+
+		if (PlaneService.HasLoaded)
+		{
+			UpdateChartData();
+		}
+	}
+
+	private void OnMessage(object? sender, EventMessage? e)
+	{
+		switch (e?.Event)
+		{
+			case EventEnum.StatsUpdated:
+				UpdateChartData();
+				InvokeAsync(StateHasChanged);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void UpdateChartData()
+	{
+		var cPlanes = CombineDataService.PlaneStats;
+		if(cPlanes.Count == 0)
+		{
+			return;
+		}
+
+		Series.Clear();
+		Labels = new string[cPlanes.Count];
+
+		var series = new ChartSeries
+		{
+			Name = "Flights",
+			Data = new double[cPlanes.Count]
+		};
+
+		var entries = cPlanes.ToArray();
+		for (int i = 0; i < entries.Length; i++)
+		{
+			var cPlane = entries[i];
+			var plane = PlaneService.Planes[cPlane.Key];
+			Labels[i] = plane.Name;
+
+			series.Data[i] = cPlane.Value.TotalFlights;
+		}
+
+		Series.Add(series);
+	}
+
+}

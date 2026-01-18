@@ -26,7 +26,10 @@ namespace RcTracking.UI.Services
         
         private Dictionary<Guid, UiPlane> _planeStats = new();
 
+        private Dictionary<DateOnly, Dictionary<Guid, int>> _monthyStats = new();
+
         public Dictionary<Guid, UiPlane> PlaneStats => _planeStats;
+        public Dictionary<DateOnly, Dictionary<Guid, int>> MonthyStats => _monthyStats;
 
         private void OnMessage(object? sender, EventMessage? e)
         {
@@ -38,15 +41,20 @@ namespace RcTracking.UI.Services
                 case EventEnum.PlaneAdded:
                     var guid = (e as PlaneFlightAddedMessage)?.PlaneId;
                     CalculatePlaneStats(guid ?? Guid.Empty);
+                    _eventBus.Message = new EventMessage { Event = EventEnum.StatsUpdated };
                     break;
 
                 case EventEnum.RefreshFlight:
                 case EventEnum.RefreshPlane:
                     CalculatePlaneStats();
+                    CalculateMonthStats();
+                    _eventBus.Message = new EventMessage { Event = EventEnum.StatsUpdated };
                     break;
 
                 case EventEnum.Clear:
                     _planeStats.Clear();
+                    _monthyStats.Clear();
+                    _eventBus.Message = new EventMessage { Event = EventEnum.StatsUpdated };
                     break;
 
                 default:
@@ -115,6 +123,33 @@ namespace RcTracking.UI.Services
             }
         }
 
+        public void CalculateMonthStats()
+        {
+            var months = new Dictionary<DateOnly, Dictionary<Guid, int>>();
+            foreach (var flight in _flightService.Flights)
+            {
+                var flightMonth = new DateOnly(flight.Value.FlightDate.Year, flight.Value.FlightDate.Month, 1);
+                if(months.TryGetValue(flightMonth, out var monthStats))
+                {
+                    if(monthStats.TryGetValue(flight.Value.PlaneId, out var flightCount))
+                    {
+                        monthStats[flight.Value.PlaneId] = flightCount + flight.Value.FlightCount;
+                    }
+                    else
+                    {
+                        monthStats[flight.Value.PlaneId] = flight.Value.FlightCount;
+                    }
+                }
+                else
+                {
+                    var newMonthStats = new Dictionary<Guid, int>();
+                    newMonthStats[flight.Value.PlaneId] = flight.Value.FlightCount;
+                    months[flightMonth] = newMonthStats;
+                }
+            }
+            _monthyStats = months;
+        }
+
         private Dictionary<Guid, List<FlightModel>> GroupFlightsByPlane(Guid? id = null)
         {
             var result = new Dictionary<Guid, List<FlightModel>>();
@@ -134,6 +169,11 @@ namespace RcTracking.UI.Services
             }
 
             return result;
+        }
+
+        public void CalculateMonthyStats(Guid monthId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

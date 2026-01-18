@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using RcTracking.Shared.Model
+@using RcTracking.UI.Charts
 @using RcTracking.UI.Events
 @using RcTracking.UI.Interface
 @using RcTracking.UI.Services
@@ -35,6 +36,14 @@
 			<MudText Typo="Typo.h5" GutterBottom="true">Working Planes</MudText>
 			@workingPlaneCount
 		</MudPaper>
+	</MudItem>
+
+	<MudItem xs="12" lg="6">
+		<MonthyByPlane/>
+	</MudItem>
+
+	<MudItem xs="12" lg="6">
+		<ByPlane />
 	</MudItem>
 
 	@* Add fun stats like Most flights this year plane with most flights
@@ -91,8 +100,6 @@
 
 	private void OnMessage(object? sender, EventMessage? e)
 	{
-		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
-
 		switch (e?.Event)
 		{
 			case EventEnum.FlightAdded:

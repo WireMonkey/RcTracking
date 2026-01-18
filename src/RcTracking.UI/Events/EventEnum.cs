@@ -7,6 +7,7 @@
         RefreshFlight,
         FlightAdded,
         PlaneAdded,
-        PlaneUpdated
+        PlaneUpdated,
+        StatsUpdated
     }
 }

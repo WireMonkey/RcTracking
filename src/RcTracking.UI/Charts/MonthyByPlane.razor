@@ -1,0 +1,109 @@
+﻿@using RcTracking.UI.Events
+@using RcTracking.UI.Interface
+@using RcTracking.UI.Services
+<h3>Monthy Flights By Plane</h3>
+<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+
+
+@code {
+	[Inject]
+	private ICombineDataService CombineDataService { get; set; }
+
+	[Inject]
+	private IPlaneService PlaneService { get; set; }
+
+	[Inject]
+	private IFlightService FlightService { get; set; }
+
+	[Inject]
+	private EventBus EventBus { get; set; }
+
+	[Parameter]
+	public int MonthsToShow { get; set; } = 5;
+
+	private List<ChartSeries> Series { get; set; } = new();
+
+	private string[] Labels { get; set; }
+
+	private ChartOptions chartOptions { get; set; } = new();
+
+	private AxisChartOptions axisChartOptions { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		EventBus.OnMessage += OnMessage;
+		chartOptions.YAxisTicks = 1;
+		chartOptions.MaxNumYAxisTicks = 20;
+		axisChartOptions.MatchBoundsToSize = true;
+		axisChartOptions.StackedBarWidthRatio = .8;
+
+		if (PlaneService.HasLoaded && FlightService.HasLoaded)
+		{
+			UpdateChartData();
+		}
+	}
+
+	private void OnMessage(object? sender, EventMessage? e)
+	{
+		switch (e?.Event)
+		{
+			case EventEnum.StatsUpdated:
+				UpdateChartData();
+				InvokeAsync(StateHasChanged);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void UpdateChartData()
+	{
+		var chartLabels = new List<string>();
+		var planeSeries = new Dictionary<string, List<double>>();
+		for (int i = MonthsToShow; i >= 0; i--)
+		{
+			var cDate = DateTime.Now.AddMonths(-i);
+			var cMonth = new DateTime(cDate.Year, cDate.Month, 1);
+			chartLabels.Add(cMonth.ToString("MMM"));
+			CombineDataService.MonthyStats.TryGetValue(DateOnly.FromDateTime(cMonth), out var monthData);
+
+			foreach (var plane in PlaneService.Planes)
+			{
+				//For each plane get the monthy flight count in plane isn't in the month data set count is 0
+				if (!planeSeries.ContainsKey(plane.Value.Name))
+				{
+					planeSeries[plane.Value.Name] = new List<double>();
+				}
+
+				if (monthData != null && monthData.TryGetValue(plane.Key, out int count))
+				{
+					planeSeries[plane.Value.Name].Add(count);
+				}
+				else
+				{
+					planeSeries[plane.Value.Name].Add(0);
+				}
+
+			}
+
+		}
+
+		Labels = chartLabels.ToArray();
+		Series.Clear();
+
+		//Remove any plane that has 0 flights in all months
+		planeSeries = planeSeries.Where(p => p.Value.Sum() > 0).ToDictionary(p => p.Key, p => p.Value);
+		Series.Clear();
+		Series.EnsureCapacity(planeSeries.Count);
+
+		foreach (var plane in planeSeries)
+		{
+			Series.Add(new ChartSeries
+			{
+				Name = plane.Key,
+				Data = plane.Value.ToArray()
+			});
+		}
+	}
+
+}

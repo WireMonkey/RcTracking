@@ -88,4 +88,52 @@ public class CombineDataServiceTests
         Assert.That(p1Stats.LastFlight, Is.EqualTo(today));
         Assert.That(svc.PlaneStats.ContainsKey(plane2.Id), Is.False);
     }
+
+    [Test]
+    [Category("UiTests")]
+    public void CalculateMonthStatsAggregates()
+    {
+        // Arrange
+        var svc = new CombineDataService(planeService, flightService, eventBus);
+
+        var plane1 = new PlaneModel(Guid.NewGuid(), "Plane1");
+        var plane2 = new PlaneModel(Guid.NewGuid(), "Plane2");
+        planeService.Planes[plane1.Id] = plane1;
+        planeService.Planes[plane2.Id] = plane2;
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lastMonth = today.AddMonths(-1);
+
+        // Two flights for plane1 this month (2 + 3 = 5)
+        flightService.Flights[Guid.NewGuid()] = NewFlight(plane1.Id, today, 2);
+        flightService.Flights[Guid.NewGuid()] = NewFlight(plane1.Id, today, 3);
+
+        // One flight for plane2 this month
+        flightService.Flights[Guid.NewGuid()] = NewFlight(plane2.Id, today, 4);
+
+        // One flight for plane1 last month
+        flightService.Flights[Guid.NewGuid()] = NewFlight(plane1.Id, lastMonth, 1);
+
+        // Act
+        svc.CalculateMonthStats();
+
+        // Assert
+        var thisMonthKey = new DateOnly(today.Year, today.Month, 1);
+        var lastMonthKey = new DateOnly(lastMonth.Year, lastMonth.Month, 1);
+
+        Assert.That(svc.MonthyStats.Count, Is.EqualTo(2));
+
+        // This month should have both planes
+        Assert.That(svc.MonthyStats.ContainsKey(thisMonthKey), Is.True);
+        var thisMonth = svc.MonthyStats[thisMonthKey];
+        Assert.That(thisMonth.Count, Is.EqualTo(2));
+        Assert.That(thisMonth[plane1.Id], Is.EqualTo(5));
+        Assert.That(thisMonth[plane2.Id], Is.EqualTo(4));
+
+        // Last month should only have plane1 with 1 flight
+        Assert.That(svc.MonthyStats.ContainsKey(lastMonthKey), Is.True);
+        var lm = svc.MonthyStats[lastMonthKey];
+        Assert.That(lm.Count, Is.EqualTo(1));
+        Assert.That(lm[plane1.Id], Is.EqualTo(1));
+    }
 }
