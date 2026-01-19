@@ -3,7 +3,14 @@
 @using RcTracking.UI.Services
 @using System.Linq
 <h3>Flights by Plane</h3>
-<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+@if (showChart)
+{
+	<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+}
+else
+{
+	<p>No data to display</p>
+}
 
 @code {
 	[Inject]
@@ -22,6 +29,8 @@
 	private ChartOptions chartOptions { get; set; } = new();
 
 	private AxisChartOptions axisChartOptions { get; set; } = new();
+
+	private bool showChart = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -54,12 +63,7 @@
 	private void UpdateChartData()
 	{
 		var cPlanes = CombineDataService.PlaneStats;
-		if(cPlanes.Count == 0)
-		{
-			return;
-		}
-
-		Series.Clear();
+		
 		Labels = new string[cPlanes.Count];
 
 		var series = new ChartSeries
@@ -78,7 +82,10 @@
 			series.Data[i] = cPlane.Value.TotalFlights;
 		}
 
+		Series.Clear();
 		Series.Add(series);
+
+		showChart = Series.Count > 0;
 	}
 
 }

@@ -1,8 +1,15 @@
 ﻿@using RcTracking.UI.Events
 @using RcTracking.UI.Interface
 @using RcTracking.UI.Services
-<h3>Monthy Flights By Plane</h3>
-<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+<h3>Monthly Flights By Plane</h3>
+@if (showChart)
+{
+	<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+}
+else
+{
+	<p>No data to display</p>
+}
 
 
 @code {
@@ -28,6 +35,8 @@
 	private ChartOptions chartOptions { get; set; } = new();
 
 	private AxisChartOptions axisChartOptions { get; set; } = new();
+
+	private bool showChart = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -104,6 +113,8 @@
 				Data = plane.Value.ToArray()
 			});
 		}
+
+		showChart = Series.Count > 0;
 	}
 
 }
