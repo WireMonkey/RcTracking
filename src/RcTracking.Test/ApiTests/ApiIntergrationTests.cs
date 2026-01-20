@@ -3,10 +3,12 @@ using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using RcTracking.Shared.Model;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using System.IO;
 
 namespace RcTracking.Test;
 
-public class ApiTests
+public class ApiIntergrationTests
 {
     private DistributedApplication _app;
 
@@ -27,6 +29,7 @@ public class ApiTests
 
         await _app.StartAsync();
     }
+
 
     [OneTimeTearDown]
     public async Task TearDown()
@@ -201,6 +204,103 @@ public class ApiTests
         var id = flights?.First().Id;
 
         var response = await client.DeleteAsync($"/api/Flight?id={id}");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+    }
+
+    [Test]
+    [Category("ImageCrud"), Order(310)]
+    public async Task ImageCreate()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var planeM = new PlaneModel(Guid.Empty, "GetTest");
+        var planeResponse = await client.PostAsJsonAsync("/api/Plane", planeM);
+        var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
+
+        // prepare multipart form data with planeId and file
+        var imagePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles", "PXL_20220901_144727125.jpg"));
+        using var fs = File.OpenRead(imagePath);
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(plane!.Id.ToString()), "planeId");
+        var streamContent = new StreamContent(fs);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        content.Add(streamContent, "file", Path.GetFileName(imagePath));
+
+        var response = await client.PostAsync("/api/Image", content);
+
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var returnModel = await response.Content.ReadFromJsonAsync<ImageModel>();
+        Assert.That(returnModel, Is.Not.Null);
+        Assert.That(returnModel.Id, Is.Not.EqualTo(Guid.Empty));
+        Assert.That(returnModel.PlaneId, Is.EqualTo(plane.Id));
+    }
+
+    [Test]
+    [Category("ImageCrud"), Order(320)]
+    public async Task ImageGet()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var response = await client.GetAsync("/api/Image");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var images = await response.Content.ReadFromJsonAsync<List<ImageModel>>();
+        Assert.That(images, Is.Not.Null);
+    }
+
+    [Test]
+    [Category("ImageCrud"), Order(321)]
+    public async Task ImageGetSingle()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Image");
+        var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
+        var id = images?.First().Id;
+
+        var response = await client.GetAsync($"/api/Image?id={id}");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var image = await response.Content.ReadFromJsonAsync<ImageModel>();
+        Assert.That(image, Is.Not.Null);
+        Assert.That(image.Id, Is.EqualTo(id));
+    }
+
+    [Test]
+    [Category("ImageCrud"), Order(330)]
+    public async Task ImageUpdate()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Image");
+        var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
+        var img = images!.First();
+
+        // for update the function expects the form field named "planeId" to contain the id to update
+        var imagePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles", "PXL_20220901_144727125.jpg"));
+        using var fs = File.OpenRead(imagePath);
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(img.Id.ToString()), "planeId");
+        var streamContent = new StreamContent(fs);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        content.Add(streamContent, "file", Path.GetFileName(imagePath));
+
+        var response = await client.PutAsync($"/api/Image", content);
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var returnModel = await response.Content.ReadFromJsonAsync<ImageModel>();
+        Assert.That(returnModel, Is.Not.Null);
+        Assert.That(returnModel.Id, Is.EqualTo(img.Id));
+    }
+
+    [Test]
+    [Category("ImageCrud"), Order(340)]
+    public async Task ImageDelete()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Image");
+        var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
+        var id = images?.First().Id;
+
+        var response = await client.DeleteAsync($"/api/Image?id={id}");
+
         Assert.That(response.IsSuccessStatusCode, Is.True);
     }
 }

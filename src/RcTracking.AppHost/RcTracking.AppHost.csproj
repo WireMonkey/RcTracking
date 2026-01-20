@@ -8,10 +8,11 @@
     <UserSecretsId>ea13d06e-559d-4958-88dc-908f20c64dab</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.0.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.Functions" Version="13.0.2-preview.1.25603.5" />
-    <PackageReference Include="Aspire.Hosting.Yarp" Version="13.0.2" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Functions" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Yarp" Version="13.1.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RcTracking.ApiFunction\RcTracking.ApiFunction.csproj" />

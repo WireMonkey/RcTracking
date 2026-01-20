@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 dist/
+/src/RcTracking.ApiFunction/Properties/ServiceDependencies
