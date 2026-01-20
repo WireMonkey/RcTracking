@@ -19,7 +19,7 @@ public class FlightFunction
     }
 
     [Function("Flight")]
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", "put", "delete")] HttpRequest req)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "put", "delete")] HttpRequest req)
     {
 
         var verb = req.Method.ToLower();

@@ -17,6 +17,7 @@ var cosmos = builder.AddAzureCosmosDB("rc-tracking-cosmos-db")
 var db = cosmos.AddCosmosDatabase("RcTrackingDb");
 var flights = db.AddContainer("flights", "/id");
 var planes = db.AddContainer("planes", "/id");
+var images = db.AddContainer("images", "/id");
 
 var functions = builder.AddAzureFunctionsProject<RcTracking_ApiFunction>("rc-tracking-function")
     .WithAzureUserAssignedIdentity(sharedMi)

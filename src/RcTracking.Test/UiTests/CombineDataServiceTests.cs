@@ -1,5 +1,4 @@
 using RcTracking.UI.Services;
-using RcTracking.UI.Events;
 using RcTracking.Shared.Model;
 using RcTracking.TestDoubles.Mocks;
 

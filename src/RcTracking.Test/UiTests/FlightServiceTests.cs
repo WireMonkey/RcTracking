@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using NUnit.Framework;
 using RcTracking.Shared.Model;
-using RcTracking.UI.Events;
 using RcTracking.UI.Services;
 
 namespace RcTracking.Test.uiTests;
