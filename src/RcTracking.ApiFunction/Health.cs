@@ -25,6 +25,7 @@ public class Health
         var db = _cosmosClient.GetDatabase("RcTrackingDb");
         var flightsC = db.GetContainer("flights");
         var planesC = db.GetContainer("planes");
+        var imagesC = db.GetContainer("images");
 
         return new OkObjectResult("Healthy");
     }

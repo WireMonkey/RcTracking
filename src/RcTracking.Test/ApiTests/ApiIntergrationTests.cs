@@ -217,12 +217,22 @@ public class ApiIntergrationTests
         var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
 
         // prepare multipart form data with planeId and file
-        var imagePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles", "PXL_20220901_144727125.jpg"));
+        var testFilesDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles"));
+        Directory.CreateDirectory(testFilesDir);
+        var imagePath = Path.Combine(testFilesDir, "test.png");
+        // If test image doesn't exist, write a tiny 1x1 PNG so tests don't rely on external files
+        if (!File.Exists(imagePath))
+        {
+            var pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==";
+            var bytes = Convert.FromBase64String(pngBase64);
+            File.WriteAllBytes(imagePath, bytes);
+        }
+
         using var fs = File.OpenRead(imagePath);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(plane!.Id.ToString()), "planeId");
         var streamContent = new StreamContent(fs);
-        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         content.Add(streamContent, "file", Path.GetFileName(imagePath));
 
         var response = await client.PostAsync("/api/Image", content);
@@ -274,12 +284,21 @@ public class ApiIntergrationTests
         var img = images!.First();
 
         // for update the function expects the form field named "planeId" to contain the id to update
-        var imagePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles", "PXL_20220901_144727125.jpg"));
+        var testFilesDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles"));
+        Directory.CreateDirectory(testFilesDir);
+        var imagePath = Path.Combine(testFilesDir, "test.png");
+        if (!File.Exists(imagePath))
+        {
+            var pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==";
+            var bytes = Convert.FromBase64String(pngBase64);
+            File.WriteAllBytes(imagePath, bytes);
+        }
+
         using var fs = File.OpenRead(imagePath);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(img.Id.ToString()), "planeId");
         var streamContent = new StreamContent(fs);
-        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         content.Add(streamContent, "file", Path.GetFileName(imagePath));
 
         var response = await client.PutAsync($"/api/Image", content);

@@ -5,7 +5,7 @@ namespace RcTracking.ApiFunction.Context
 {
     public class ImageContext : DbContext
     {
-        public ImageContext(DbContextOptions<FlightContext> options) : base(options) { }
+        public ImageContext(DbContextOptions<ImageContext> options) : base(options) { }
 
         public DbSet<ImageModel> Images { get; set; }
 
