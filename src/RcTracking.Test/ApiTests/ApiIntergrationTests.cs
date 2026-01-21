@@ -111,14 +111,14 @@ public class ApiIntergrationTests
         var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
         var id = planes.First(x => x.Name.Contains("IntTest"))?.Id ?? Guid.Empty;
         Assert.That(id, Is.Not.EqualTo(Guid.Empty));
-        var updatedPlane = new PlaneModel(id, "InitTest - Update");
+        var updatedPlane = new PlaneModel(id, "IntTest - Update");
 
         var response = await client.PutAsJsonAsync($"/api/Plane", updatedPlane);
         Assert.That(response.IsSuccessStatusCode, Is.True);
 
         var returnModel = await response.Content.ReadFromJsonAsync<PlaneModel>();
         Assert.That(returnModel, Is.Not.Null);
-        Assert.That(returnModel.Name, Is.EqualTo("InitTest - Update"));
+        Assert.That(returnModel.Name, Is.EqualTo("IntTest - Update"));
     }
 
     [Test]
@@ -141,11 +141,11 @@ public class ApiIntergrationTests
     public async Task FlightCreate() 
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var nPlane = new PlaneModel(Guid.Empty, "InitTest - Flight");
+        var nPlane = new PlaneModel(Guid.Empty, "IntTest - Flight");
         var planeResponse = await client.PostAsJsonAsync("/api/Plane", nPlane);
         var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
 
-        var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "InitTest Test flight creation");
+        var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "IntTest Test flight creation");
         var response = await client.PostAsJsonAsync($"/api/Flight", flight);
 
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -174,7 +174,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var id = flights.Where(x => x.Notes.Contains("InitTest")).First()?.Id ?? Guid.Empty;
+        var id = flights.Where(x => x.Notes.Contains("IntTest")).First()?.Id ?? Guid.Empty;
         Assert.That(id, Is.Not.EqualTo(Guid.Empty));
         
         var response = await client.GetAsync($"/api/Flight?id={id}");
@@ -192,7 +192,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var flight = flights.Where(x => x.Notes.Contains("InitTest")).First();
+        var flight = flights.Where(x => x.Notes.Contains("IntTest")).First();
         Assert.That(flight, Is.Not.Null);
 
         flight.Notes = "IntTest - Updated notes";
@@ -212,7 +212,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var id = flights.Where(x => x.Notes.Contains("InitTest")).First()?.Id ?? Guid.Empty;
+        var id = flights.Where(x => x.Notes.Contains("IntTest")).First()?.Id ?? Guid.Empty;
         Assert.That(id, Is.Not.EqualTo(Guid.Empty));
 
         var response = await client.DeleteAsync($"/api/Flight?id={id}");
@@ -342,7 +342,7 @@ public class ApiIntergrationTests
         var allResponse = await client.GetAsync("/api/Plane");
         var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
 
-        var testPlanes = planes.Where(x => x.Name.Contains("IntTest")).ToAsyncEnumerable();
+        var testPlanes = planes.Where(x => x.Name.Contains("IntTest") || x.Name.Contains("InitTest")).ToAsyncEnumerable();
         await foreach (var plane in testPlanes)
         {
             await client.DeleteAsync($"/api/Plane?id={plane.Id}");
@@ -354,7 +354,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var testFlights = flights.Where(x => x.Notes.Contains("IntTest")).ToAsyncEnumerable();
+        var testFlights = flights.Where(x => x.Notes.Contains("IntTest")|| x.Notes.Contains("InitTest")).ToAsyncEnumerable();
         await foreach (var flight in testFlights)
         {
             await client.DeleteAsync($"/api/Flight?id={flight.Id}");
