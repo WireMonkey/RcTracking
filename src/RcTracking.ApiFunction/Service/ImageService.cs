@@ -16,11 +16,11 @@ namespace RcTracking.ApiFunction.Service
             _imageContext = imageContext;
         }
 
-        public async Task<ImageModel> AddImageAsync(Guid planeId, Image image)
+        public async Task<ImageModel> AddImageAsync(Guid planeId, Image image, bool isTest)
         {
             var imageString = ResizeImage(image);
 
-            var dbRec = ImageModel.CreateDbRec(planeId, imageString);
+            var dbRec = ImageModel.CreateDbRec(planeId, imageString, isTest);
             await _imageContext.Images.AddAsync(dbRec);
             await _imageContext.SaveChangesAsync();
             return dbRec;

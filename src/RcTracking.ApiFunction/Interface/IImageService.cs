@@ -5,7 +5,7 @@ namespace RcTracking.ApiFunction.Interface
 {
     public interface IImageService
     {
-        public Task<ImageModel> AddImageAsync(Guid planeId, Image image);
+        public Task<ImageModel> AddImageAsync(Guid planeId, Image image, bool isTest);
         public Task<ImageModel> UpdateImageAsync(Guid id, Image image);
         public Task DeleteImageAsync(Guid id);
         public Task<ImageModel> GetImageAsync(Guid id);

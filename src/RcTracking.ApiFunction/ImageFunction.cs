@@ -37,7 +37,7 @@ public class ImageFunction
     {
         var data = await ParseForm(req);
 
-        var result = await _imageService.AddImageAsync(data.planeId, data.image);
+        var result = await _imageService.AddImageAsync(data.planeId, data.image, data.isTest);
         return new OkObjectResult(result);
     }
 
@@ -68,7 +68,7 @@ public class ImageFunction
         return new OkResult();
     }
 
-    private async Task<(Guid planeId, Image image)> ParseForm(HttpRequest req)
+    private async Task<(Guid planeId, Image image, bool isTest)> ParseForm(HttpRequest req)
     {
         var form = req.ReadFormAsync().Result;
         string id = form["planeId"];
@@ -90,6 +90,7 @@ public class ImageFunction
         {
             throw new ArgumentException("Uploaded file is not a valid image");
         }
-        return (planeId, image);
+        bool isTest = Convert.ToBoolean(form["isTest"]);
+        return (planeId, image, isTest);
     }
 }

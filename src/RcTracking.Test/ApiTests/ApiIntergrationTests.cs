@@ -2,9 +2,10 @@
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using RcTracking.Shared.Model;
-using System.Net.Http.Json;
-using System.Net.Http.Headers;
 using System.IO;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Numerics;
 
 namespace RcTracking.Test;
 
@@ -34,6 +35,10 @@ public class ApiIntergrationTests
     [OneTimeTearDown]
     public async Task TearDown()
     {
+        await PlaneCleanup();
+        await FlightCleanup();
+        await ImageCleanup();
+
         if (_app != null)
         {
             await _app.StopAsync();
@@ -58,7 +63,7 @@ public class ApiIntergrationTests
     public async Task PlaneCreate()
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var plane = new PlaneModel(Guid.Empty, "GetTest");
+        var plane = new PlaneModel(Guid.Empty, "IntTest - Plane");
         var response = await client.PostAsJsonAsync("/api/Plane", plane);
         Assert.That(response.IsSuccessStatusCode, Is.True);
 
@@ -86,7 +91,8 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Plane");
         var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
-        var id = planes?.First().Id;
+        var id = planes.First(x => x.Name.Contains("IntTest"))?.Id ?? Guid.Empty;
+        Assert.That(id, Is.Not.EqualTo(Guid.Empty));
 
         var response = await client.GetAsync($"/api/Plane?id={id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -103,15 +109,16 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Plane");
         var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
-        var id = planes!.First().Id;
-        var updatedPlane = new PlaneModel(id, "UpdatedName");
+        var id = planes.First(x => x.Name.Contains("IntTest"))?.Id ?? Guid.Empty;
+        Assert.That(id, Is.Not.EqualTo(Guid.Empty));
+        var updatedPlane = new PlaneModel(id, "InitTest - Update");
 
         var response = await client.PutAsJsonAsync($"/api/Plane", updatedPlane);
         Assert.That(response.IsSuccessStatusCode, Is.True);
 
         var returnModel = await response.Content.ReadFromJsonAsync<PlaneModel>();
         Assert.That(returnModel, Is.Not.Null);
-        Assert.That(returnModel.Name, Is.EqualTo("UpdatedName"));
+        Assert.That(returnModel.Name, Is.EqualTo("InitTest - Update"));
     }
 
     [Test]
@@ -121,7 +128,8 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Plane");
         var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
-        var id = planes?.First().Id;
+        var id = planes.First(x => x.Name.Contains("IntTest"))?.Id ?? Guid.Empty;
+        Assert.That(id, Is.Not.EqualTo(Guid.Empty));
 
         var response = await client.DeleteAsync($"/api/Plane?id={id}");
 
@@ -133,11 +141,11 @@ public class ApiIntergrationTests
     public async Task FlightCreate() 
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var nPlane = new PlaneModel(Guid.Empty, "FlightCreateTest");
+        var nPlane = new PlaneModel(Guid.Empty, "InitTest - Flight");
         var planeResponse = await client.PostAsJsonAsync("/api/Plane", nPlane);
         var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
 
-        var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "Test flight creation");
+        var flight = new FlightModel(Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow), plane!.Id, 1, "InitTest Test flight creation");
         var response = await client.PostAsJsonAsync($"/api/Flight", flight);
 
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -166,8 +174,9 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var id = flights?.First().Id;
-
+        var id = flights.Where(x => x.Notes.Contains("InitTest")).First()?.Id ?? Guid.Empty;
+        Assert.That(id, Is.Not.EqualTo(Guid.Empty));
+        
         var response = await client.GetAsync($"/api/Flight?id={id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
 
@@ -183,15 +192,17 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var flight = flights!.First();
-        flight.Notes = "Updated notes";
+        var flight = flights.Where(x => x.Notes.Contains("InitTest")).First();
+        Assert.That(flight, Is.Not.Null);
+
+        flight.Notes = "IntTest - Updated notes";
 
         var response = await client.PutAsJsonAsync($"/api/Flight", flight);
         Assert.That(response.IsSuccessStatusCode, Is.True);
         
         var returnModel = await response.Content.ReadFromJsonAsync<FlightModel>();
         Assert.That(returnModel, Is.Not.Null);
-        Assert.That(returnModel.Notes, Is.EqualTo("Updated notes"));
+        Assert.That(returnModel.Notes, Is.EqualTo("IntTest - Updated notes"));
     }
 
     [Test]
@@ -201,7 +212,8 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Flight");
         var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
-        var id = flights?.First().Id;
+        var id = flights.Where(x => x.Notes.Contains("InitTest")).First()?.Id ?? Guid.Empty;
+        Assert.That(id, Is.Not.EqualTo(Guid.Empty));
 
         var response = await client.DeleteAsync($"/api/Flight?id={id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -212,7 +224,7 @@ public class ApiIntergrationTests
     public async Task ImageCreate()
     {
         var client = _app.CreateHttpClient("rc-tracking-function");
-        var planeM = new PlaneModel(Guid.Empty, "GetTest");
+        var planeM = new PlaneModel(Guid.Empty, "IntTest - Image");
         var planeResponse = await client.PostAsJsonAsync("/api/Plane", planeM);
         var plane = await planeResponse.Content.ReadFromJsonAsync<PlaneModel>();
 
@@ -231,6 +243,7 @@ public class ApiIntergrationTests
         using var fs = File.OpenRead(imagePath);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(plane!.Id.ToString()), "planeId");
+        content.Add(new StringContent("true"), "isTest");
         var streamContent = new StreamContent(fs);
         streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         content.Add(streamContent, "file", Path.GetFileName(imagePath));
@@ -264,7 +277,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Image");
         var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
-        var id = images?.First().Id;
+        var id = images?.First(x => x.IsTest ).Id;
 
         var response = await client.GetAsync($"/api/Image?id={id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -281,7 +294,7 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Image");
         var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
-        var img = images!.First();
+        var img = images!.First(x => x.IsTest);
 
         // for update the function expects the form field named "planeId" to contain the id to update
         var testFilesDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestFiles"));
@@ -316,10 +329,47 @@ public class ApiIntergrationTests
         var client = _app.CreateHttpClient("rc-tracking-function");
         var allResponse = await client.GetAsync("/api/Image");
         var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
-        var id = images?.First().Id;
+        var id = images?.First(x => x.IsTest).Id;
 
         var response = await client.DeleteAsync($"/api/Image?id={id}");
 
         Assert.That(response.IsSuccessStatusCode, Is.True);
+    }
+
+    private async Task PlaneCleanup()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Plane");
+        var planes = await allResponse.Content.ReadFromJsonAsync<List<PlaneModel>>();
+
+        var testPlanes = planes.Where(x => x.Name.Contains("IntTest")).ToAsyncEnumerable();
+        await foreach (var plane in testPlanes)
+        {
+            await client.DeleteAsync($"/api/Plane?id={plane.Id}");
+        }
+    }
+
+    private async Task FlightCleanup()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Flight");
+        var flights = await allResponse.Content.ReadFromJsonAsync<List<FlightModel>>();
+        var testFlights = flights.Where(x => x.Notes.Contains("IntTest")).ToAsyncEnumerable();
+        await foreach (var flight in testFlights)
+        {
+            await client.DeleteAsync($"/api/Flight?id={flight.Id}");
+        }
+    }
+
+    private async Task ImageCleanup()
+    {
+        var client = _app.CreateHttpClient("rc-tracking-function");
+        var allResponse = await client.GetAsync("/api/Image");
+        var images = await allResponse.Content.ReadFromJsonAsync<List<ImageModel>>();
+        var testImages = images.Where(x => x.IsTest).ToAsyncEnumerable();
+        await foreach (var image in testImages)
+        {
+            await client.DeleteAsync($"/api/Image?id={image.Id}");
+        }
     }
 }
