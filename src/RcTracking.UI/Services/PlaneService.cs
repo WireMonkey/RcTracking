@@ -87,7 +87,7 @@ namespace RcTracking.UI.Services
             _snackbarService.Add("Failed to load planes from DB", Severity.Error);
         }
 
-        public async Task AddPlaneAsync(PlaneModel plane)
+        public async Task<Guid> AddPlaneAsync(PlaneModel plane)
         {
             using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
             var response = await httpClient.PostAsJsonAsync($"{_apiUrl}plane", plane);
@@ -103,11 +103,12 @@ namespace RcTracking.UI.Services
                 {
                     _planes.Add(addedPlane.Id, addedPlane);
                     _eventBus.Message = new PlaneFlightAddedMessage { Event = EventEnum.PlaneAdded, PlaneId = addedPlane.Id };
-                    return;
+                    return addedPlane.Id;
                 }
             }
 
             _snackbarService.Add("Failed to add plane to DB", Severity.Error);
+            return Guid.Empty;
         }
 
         public async Task UpdatePlaneAsync(PlaneModel plane)

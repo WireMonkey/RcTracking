@@ -7,7 +7,7 @@
 @inject IDialogService DialogService
 
 <MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
-	<MudItem md="6" lg="4">		
+	<MudItem md="6" lg="4">
 		<MudCard Outlined="true">
 			<MudCardContent>
 				<MudText Typo="Typo.h5" GutterBottom="true">Total Planes</MudText>
@@ -25,16 +25,36 @@
 
 
 
-	@foreach(var plane in planes) 
+	@foreach (var plane in planes)
 	{
 		<MudItem md="6" lg="3">
 			<MudCard Outlined="true">
 				<MudCardHeader>
-					<MudText Typo="Typo.h6" GutterBottom="true">@plane.Name</MudText>
+					<MudText Typo="Typo.h6">@plane.Name</MudText>
 				</MudCardHeader>
 				<MudCardContent align-content-start>
-					<MudSwitch @bind-Value="plane.Flying" Label="Flying: " Color="Color.Primary" Disabled="true" LabelPlacement="Placement.Start" />
-					<MudText GutterBottom="true">Flights: @PlaneFlights(plane.Id)</MudText>
+					<MudGrid Spacing="6" Justify="Justify.SpaceEvenly">
+						<MudItem xs="8">
+							<MudText GutterBottom="true">
+								Flying:&nbsp;
+								@if(@plane.Flying)
+								{
+									<MudIcon Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle" />
+								}
+								else
+								{
+									<MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Cancel" />
+								}
+							</MudText>
+							<MudText GutterBottom="true">Flights: @PlaneFlights(plane.Id)</MudText>
+						</MudItem>
+						<MudItem xs="4">
+							@if (!string.IsNullOrEmpty(PlaneImage(plane.Id)))
+							{
+								<MudImage Src="@PlaneImage(plane.Id)" Alt="Plane Image" Fluid="true" />
+							}
+						</MudItem>
+					</MudGrid>
 				</MudCardContent>
 				<MudCardActions>
 					<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => OpenDetailDialog(plane)">Details</MudButton>
@@ -55,6 +75,9 @@
 	[Inject]
 	private ICombineDataService CombineDataService { get; set; }
 
+	[Inject]
+	private IImageService ImageService { get; set; }
+
 	private int planeCount { get; set; } = 0;
 	private List<PlaneModel> planes = new();
 
@@ -62,7 +85,7 @@
 	{
 		EventBus.OnMessage += OnMessage;
 
-		if(PlaneService.HasLoaded)
+		if (PlaneService.HasLoaded)
 		{
 			planes = PlaneService.Planes.Values.ToList();
 			planeCount = planes.Count;
@@ -77,8 +100,8 @@
 	{
 		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
 
-		if (e?.Event == EventEnum.RefreshPlane || 
-			e.Event == EventEnum.PlaneUpdated || 
+		if (e?.Event == EventEnum.RefreshPlane ||
+			e.Event == EventEnum.PlaneUpdated ||
 			e.Event == EventEnum.PlaneAdded)
 		{
 			planes = PlaneService.Planes.Values.ToList();
@@ -97,6 +120,15 @@
 	private int PlaneFlights(Guid id)
 	{
 		return CombineDataService.PlaneStats.TryGetValue(id, out var stats) ? stats.TotalFlights : 0;
+	}
+
+	private string PlaneImage(Guid id)
+	{
+		if (ImageService.Images.TryGetValue(id, out var imageModel))
+		{
+			return $"data:image/jpg;base64,{imageModel?.ImageString ?? ""}";
+		}
+		return "";
 	}
 
 	private Task OpenDetailDialog(PlaneModel plane)

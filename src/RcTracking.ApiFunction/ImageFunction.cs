@@ -37,7 +37,7 @@ public class ImageFunction
     {
         var data = await ParseForm(req);
 
-        var result = await _imageService.AddImageAsync(data.planeId, data.image, data.isTest);
+        var result = await _imageService.AddImageAsync(data.id, data.image, data.isTest);
         return new OkObjectResult(result);
     }
 
@@ -53,7 +53,7 @@ public class ImageFunction
     private async Task<IActionResult> Put(HttpRequest req)
     {
         var data = await ParseForm(req);
-        var result = await _imageService.UpdateImageAsync(data.planeId, data.image);
+        var result = await _imageService.UpdateImageAsync(data.id, data.image);
         return new OkObjectResult(result);
     }
 
@@ -68,13 +68,13 @@ public class ImageFunction
         return new OkResult();
     }
 
-    private async Task<(Guid planeId, Image image, bool isTest)> ParseForm(HttpRequest req)
+    private async Task<(Guid id, Image image, bool isTest)> ParseForm(HttpRequest req)
     {
         var form = req.ReadFormAsync().Result;
-        string id = form["planeId"];
-        if (!Guid.TryParse(id, out Guid planeId))
+        string fId = form["id"];
+        if (!Guid.TryParse(fId, out Guid id))
         {
-            throw new ArgumentException("Invalid or missing planeId");
+            throw new ArgumentException("Invalid or missing id");
         }
         var file = form.Files.FirstOrDefault();
         if (file == null)
@@ -91,6 +91,6 @@ public class ImageFunction
             throw new ArgumentException("Uploaded file is not a valid image");
         }
         bool isTest = Convert.ToBoolean(form["isTest"]);
-        return (planeId, image, isTest);
+        return (id, image, isTest);
     }
 }

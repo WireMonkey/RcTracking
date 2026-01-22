@@ -7,7 +7,7 @@ namespace RcTracking.UI.Interface
         Dictionary<Guid, PlaneModel> Planes { get; }
         bool HasLoaded { get; }
         Task LoadPlanesAsync();
-        Task AddPlaneAsync(PlaneModel plane);
+        Task<Guid> AddPlaneAsync(PlaneModel plane);
         Task UpdatePlaneAsync(PlaneModel plane);
         Task DeletePlaneAsync(Guid planeId);
         int WorkingPlanesCount();

@@ -18,6 +18,7 @@ builder.Services.AddScoped<EventBus>();
 builder.Services.AddScoped<IFlightService, FlightService>();
 builder.Services.AddScoped<IPlaneService, PlaneService>();
 builder.Services.AddScoped<ICombineDataService, CombineDataService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddMsalAuthentication(options =>
 {

@@ -70,6 +70,9 @@
 	private ICombineDataService CombineDataService { get; set; }
 
 	[Inject]
+	private IImageService ImageService { get; set; }
+
+	[Inject]
 	private EventBus EventBus { get; set; }
 
 	[Inject]
@@ -141,6 +144,7 @@
 		if (!PlaneService.HasLoaded)
 		{
 			await PlaneService.LoadPlanesAsync();
+			await ImageService.LoadImages();
 		}
 		else
 		{

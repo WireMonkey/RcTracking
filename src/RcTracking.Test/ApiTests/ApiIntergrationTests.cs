@@ -242,7 +242,7 @@ public class ApiIntergrationTests
 
         using var fs = File.OpenRead(imagePath);
         using var content = new MultipartFormDataContent();
-        content.Add(new StringContent(plane!.Id.ToString()), "planeId");
+        content.Add(new StringContent(plane!.Id.ToString()), "id");
         content.Add(new StringContent("true"), "isTest");
         var streamContent = new StreamContent(fs);
         streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
@@ -309,7 +309,7 @@ public class ApiIntergrationTests
 
         using var fs = File.OpenRead(imagePath);
         using var content = new MultipartFormDataContent();
-        content.Add(new StringContent(img.Id.ToString()), "planeId");
+        content.Add(new StringContent(img.Id.ToString()), "id");
         var streamContent = new StreamContent(fs);
         streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         content.Add(streamContent, "file", Path.GetFileName(imagePath));

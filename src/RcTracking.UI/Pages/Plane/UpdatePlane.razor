@@ -1,5 +1,6 @@
 ﻿@using RcTracking.Shared.Model
 @using RcTracking.UI.Interface
+@using System.Threading.Tasks
 
 <MudDialog>
 	<TitleContent>
@@ -19,13 +20,26 @@
 			<MudItem xs="4" justify-center>
 				<MudSwitch @bind-Value="Plane.Flying" Label="Flying" Color="Color.Primary" LabelPlacement="Placement.Start" />
 			</MudItem>
-			<MudItem xs="12">
+			<MudItem xs="8">
 				<MudTextField @bind-Value="Plane.Notes" T="string" Label="Notes" Variant="Variant.Text" Lines="5" />
+			</MudItem>
+			<MudItem xs="4">
+				@if (!string.IsNullOrEmpty(planeImg))
+				{
+					<MudImage Src="@planeImg" Alt="Plane Image" Fluid="true"/>
+				}
 			</MudItem>
 		</MudGrid>
 		<MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true" />
 	</DialogContent>
 	<DialogActions>
+		<MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" MaximumFileCount="1" Class="object-left" Accept="image/jpg" MaxFileSize="long.MaxValue">
+			<ActivatorContent>
+				<MudIconButton Color="Color.Info"
+							   Icon="@Icons.Material.Filled.PhotoCamera">
+				</MudIconButton>
+			</ActivatorContent>
+		</MudFileUpload>
 		<MudButton OnClick="Cancel">Cancel</MudButton>
 		<MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
 	</DialogActions>
@@ -38,6 +52,9 @@
 	[Inject]
 	private IPlaneService PlaneService { get; set; }
 
+	[Inject]
+	private IImageService ImageService { get; set; }
+
 	[Parameter]
 	public PlaneModel Plane { get; init; }
 
@@ -46,7 +63,19 @@
 
 	private bool _visible = false;
 
+	private string planeImg { get; set; }
+
 	private void Cancel() => MudDialog.Cancel();
+
+	IList<IBrowserFile> _files = new List<IBrowserFile>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if(ImageService.Images.TryGetValue(Plane.Id, out var imageModel))
+		{
+			planeImg = $"data:image/jpg;base64,{imageModel?.ImageString ?? ""}";
+		}
+	}
 
 	private async Task Submit()
 	{
@@ -54,14 +83,29 @@
 
 		if(Plane.Id == Guid.Empty)
 		{
-			await PlaneService.AddPlaneAsync(Plane);
+			var id = await PlaneService.AddPlaneAsync(Plane);
+			await addImage(id);
 		}
 		else
 		{
 			await PlaneService.UpdatePlaneAsync(Plane);
+			await addImage(Plane.Id);
 		}
 
 		MudDialog.Close(DialogResult.Ok(true));
 		_visible = false;
+	}
+
+	private async Task UploadFiles(IBrowserFile file)
+	{
+		_files.Add(file);
+	}
+
+	private async Task addImage(Guid planeId)
+	{
+		if(_files.Count > 0)
+		{
+			await ImageService.AddImage(planeId, _files[0]);
+		}
 	}
 }
