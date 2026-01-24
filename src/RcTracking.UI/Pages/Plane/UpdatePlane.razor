@@ -33,7 +33,7 @@
 		<MudOverlay @bind-Visible="_visible" DarkBackground AutoClose="true" />
 	</DialogContent>
 	<DialogActions>
-		<MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" MaximumFileCount="1" Class="object-left" Accept="image/jpg" MaxFileSize="long.MaxValue">
+		<MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" MaximumFileCount="1" Class="object-left" Accept="image/*" MaxFileSize="long.MaxValue" capture>
 			<ActivatorContent>
 				<MudIconButton Color="Color.Info"
 							   Icon="@Icons.Material.Filled.PhotoCamera">
