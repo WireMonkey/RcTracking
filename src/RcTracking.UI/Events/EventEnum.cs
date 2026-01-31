@@ -5,9 +5,11 @@
         Clear = 0,
         RefreshPlane,
         RefreshFlight,
+        RefreshImage,
         FlightAdded,
         PlaneAdded,
         PlaneUpdated,
-        StatsUpdated
+        StatsUpdated,
+        ImageUpsert
     }
 }

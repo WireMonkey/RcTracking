@@ -23,8 +23,6 @@
 		</MudCard>
 	</MudItem>
 
-
-
 	@foreach (var plane in planes)
 	{
 		<MudItem sm="12" md="6" lg="3">
@@ -47,6 +45,8 @@
 								}
 							</MudText>
 							<MudText GutterBottom="true">Flights: @PlaneFlights(plane.Id)</MudText>
+							<MudText GutterBottom="true">Prop: @plane.Propeller</MudText>
+							<MudText GutterBottom="true">Motor: @plane.Motor</MudText>
 						</MudItem>
 						<MudItem xs="4">
 							@if (!string.IsNullOrEmpty(PlaneImage(plane.Id)))
@@ -64,7 +64,7 @@
 	}
 </MudGrid>
 
-@code {
+	@code {
 
 	[Inject]
 	private EventBus EventBus { get; set; }
@@ -94,11 +94,18 @@
 		{
 			await PlaneService.LoadPlanesAsync();
 		}
+
+		if(!ImageService.HasLoaded)
+		{
+			await ImageService.LoadImages();
+		}
 	}
 
 	private void OnMessage(object? sender, EventMessage? e)
 	{
 		Console.WriteLine($"Event received. Type: {e?.Event.ToString() ?? "none"}");
+
+
 
 		if (e?.Event == EventEnum.RefreshPlane ||
 			e.Event == EventEnum.PlaneUpdated ||
@@ -108,12 +115,17 @@
 			planeCount = planes.Count;
 			StateHasChanged();
 		}
+		else if(e?.Event == EventEnum.ImageUpsert ||
+				e.Event == EventEnum.RefreshImage)
+		{
+			StateHasChanged();
+		}
 	}
 
 	private Task OpenNewPlaneDialog()
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		var nPlane = new PlaneModel(Guid.Empty, "", "", "", "", false);
+		var nPlane = new PlaneModel(Guid.Empty, "", "", "", "", "",false);
 		return DialogService.ShowAsync<UpdatePlane>("", new DialogParameters { { "Plane", nPlane }, { "Title", "New Plane" } }, options);
 	}
 

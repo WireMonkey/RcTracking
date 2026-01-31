@@ -24,6 +24,9 @@
 				<MudTextField @bind-Value="Plane.Notes" T="string" Label="Notes" Variant="Variant.Text" Lines="5" />
 			</MudItem>
 			<MudItem xs="4">
+				<MudTextField @bind-Value="Plane.Motor" Label="Motor" Variant="Variant.Filled" FullWidth="true" />
+			</MudItem>
+			<MudItem xs="4">
 				@if (!string.IsNullOrEmpty(planeImg))
 				{
 					<MudImage Src="@planeImg" Alt="Plane Image" Fluid="true"/>
@@ -80,6 +83,7 @@
 	private async Task Submit()
 	{
 		_visible = true;
+		MudDialog.Close(DialogResult.Ok(true));
 
 		if(Plane.Id == Guid.Empty)
 		{
@@ -92,7 +96,6 @@
 			await addImage(Plane.Id);
 		}
 
-		MudDialog.Close(DialogResult.Ok(true));
 		_visible = false;
 	}
 

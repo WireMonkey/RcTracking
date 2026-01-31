@@ -2,7 +2,7 @@
 
 namespace RcTracking.Shared.Model;
 
-public class PlaneModel(Guid Id, string Name, string? Propeller = null, string? Battery = null, string? Notes = null, bool Flying = false)
+public class PlaneModel(Guid Id, string Name, string? Propeller = null, string? Battery = null, string? Motor = null, string? Notes = null, bool Flying = false)
 {
     [Required]
     public Guid Id { get; init; } = Id;
@@ -10,15 +10,17 @@ public class PlaneModel(Guid Id, string Name, string? Propeller = null, string? 
     public string Name { get; set; } = Name;
     public string? Propeller {  get; set; } = Propeller;
     public string? Battery { get; set; } = Battery;
+    public string? Motor { get; set; } = Motor;
     public bool Flying { get; set; } = Flying;
     public string? Notes { get; set; } = Notes;
 
-    public static PlaneModel CreateDbRec(PlaneModel model) => new(Guid.NewGuid(), model.Name, model.Propeller, model.Battery, model.Notes, model.Flying);
+    public static PlaneModel CreateDbRec(PlaneModel model) => new(Guid.NewGuid(), model.Name, model.Propeller, model.Battery, model.Motor, model.Notes, model.Flying);
     public static PlaneModel UpdateDbRec(PlaneModel dbRec, PlaneModel model)
     {
         dbRec.Name = model.Name;
         dbRec.Propeller = model.Propeller;
         dbRec.Battery = model.Battery;
+        dbRec.Motor = model.Motor;
         dbRec.Notes = model.Notes;
         dbRec.Flying = model.Flying;
         return dbRec;

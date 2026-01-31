@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.Extensions.Logging;
 using MudBlazor;
 using RcTracking.Shared.Model;
 using RcTracking.UI.Events;
@@ -85,6 +86,7 @@ namespace RcTracking.UI.Services
                     if (addedImage is not null)
                     {
                         _images.Add(addedImage.PlaneId, addedImage);
+                        _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
                         return;
                     }
                 }
@@ -126,6 +128,7 @@ namespace RcTracking.UI.Services
                 }
 
                 _hasLoaded = true;
+                _eventBus.Message = new EventMessage { Event = EventEnum.RefreshImage };
                 return;
             }
         }
@@ -148,6 +151,7 @@ namespace RcTracking.UI.Services
                 if (updatedImage is not null)
                 {
                     _images[updatedImage.PlaneId] = updatedImage;
+                    _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
                     return;
                 }
             }
