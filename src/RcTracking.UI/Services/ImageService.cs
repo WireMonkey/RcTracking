@@ -60,32 +60,41 @@ namespace RcTracking.UI.Services
 
         public bool HasLoaded { get => _hasLoaded; }
 
-        public async Task AddImage(Guid planeId, IBrowserFile image)
+        public async Task AddImage(Guid planeId, byte[] image, string fileName)
         {
-            if (_images.TryGetValue(planeId, out var imageModel))
-            {
-                await UpdateImage(imageModel.Id, image);
-                return;
-            }
-
+            var hasImage = _images.TryGetValue(planeId, out var imageModel);
             try
             {
+
                 using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
                 var form = new MultipartFormDataContent();
-                form.Add(new StreamContent(image.OpenReadStream(_maxAllowedSize)), "file", image.Name);
-                form.Add(new StringContent(planeId.ToString()), "id");
-                var response = await httpClient.PostAsync($"{_apiUrl}image", form);
+                form.Add(new StreamContent(new MemoryStream(image)), "file", fileName);
+
+                if(hasImage)
+                {
+                    form.Add(new StringContent(imageModel.Id.ToString()), "id");
+                } else
+                {
+                    form.Add(new StringContent(planeId.ToString()), "id");
+                }
+
+                var response = hasImage ? await httpClient.PutAsync($"{_apiUrl}image", form) : await httpClient.PostAsync($"{_apiUrl}image", form);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var addedImage = await response.Content.ReadAsStringAsync()
+                    var returnImage = await response.Content.ReadAsStringAsync()
                         .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<ImageModel>(t.Result,
                             new System.Text.Json.JsonSerializerOptions
                             {
                                 PropertyNameCaseInsensitive = true
                             }));
-                    if (addedImage is not null)
+                    if (returnImage is not null)
                     {
-                        _images.Add(addedImage.PlaneId, addedImage);
+                        if(hasImage)
+                            _images[planeId] = returnImage;
+                        else
+                            _images.Add(returnImage.PlaneId, returnImage);
+
                         _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
                         return;
                     }
@@ -97,6 +106,11 @@ namespace RcTracking.UI.Services
             { 
                 Console.WriteLine(ex.ToString());
                 _snackbarService.Add($"Image was to big.", Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                _snackbarService.Add($"An error occurred while uploading the image.", Severity.Error);
             }
         }
 
@@ -133,28 +147,5 @@ namespace RcTracking.UI.Services
             }
         }
 
-        public async Task UpdateImage(Guid id, IBrowserFile image)
-        {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var form = new MultipartFormDataContent();
-            form.Add(new StreamContent(image.OpenReadStream(_maxAllowedSize)), "file", image.Name);
-            form.Add(new StringContent(id.ToString()), "id");
-            var response = await httpClient.PutAsync($"{_apiUrl}image", form);
-            if (response.IsSuccessStatusCode)
-            {
-                var updatedImage = await response.Content.ReadAsStringAsync()
-                    .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<ImageModel>(t.Result,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }));
-                if (updatedImage is not null)
-                {
-                    _images[updatedImage.PlaneId] = updatedImage;
-                    _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
-                    return;
-                }
-            }
-        }
     }
 }

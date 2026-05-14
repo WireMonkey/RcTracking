@@ -70,7 +70,8 @@
 
 	private void Cancel() => MudDialog.Cancel();
 
-	IList<IBrowserFile> _files = new List<IBrowserFile>();
+    private byte[] updateImage { get; set; } = [];
+    private string fileName { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -84,6 +85,8 @@
 	{
 		_visible = true;
 		MudDialog.Close(DialogResult.Ok(true));
+
+		Console.WriteLine($"Saving Plane, Id:{Plane.Id} Images:{updateImage?.Length}");
 
 		if(Plane.Id == Guid.Empty)
 		{
@@ -101,14 +104,19 @@
 
 	private async Task UploadFiles(IBrowserFile file)
 	{
-		_files.Add(file);
+		using var stream = file.OpenReadStream();
+		using var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream);
+		updateImage = memoryStream.ToArray();
+        fileName = file.Name;
 	}
 
 	private async Task addImage(Guid planeId)
 	{
-		if(_files.Count > 0)
+		if(updateImage.Length > 0)
 		{
-			await ImageService.AddImage(planeId, _files[0]);
+			await ImageService.AddImage(planeId, updateImage, fileName);
+            Console.WriteLine($"Image added for Plane Id: {planeId}");
 		}
 	}
 }
