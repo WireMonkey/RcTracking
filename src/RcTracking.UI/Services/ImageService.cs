@@ -96,6 +96,7 @@ namespace RcTracking.UI.Services
                             _images.Add(returnImage.PlaneId, returnImage);
 
                         _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
+                        _snackbarService.Add("Image added successfully", Severity.Success);
                         return;
                     }
                 }

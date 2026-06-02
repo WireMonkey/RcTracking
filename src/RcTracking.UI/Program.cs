@@ -1,9 +1,10 @@
+using BlazorApplicationInsights;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using RcTracking.UI;
-using RcTracking.UI.Services;
 using RcTracking.UI.Interface;
+using RcTracking.UI.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -23,6 +24,12 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+});
+
+var appInsights = builder.Configuration.GetConnectionString("appInsights");
+builder.Services.AddBlazorApplicationInsights(config =>
+{
+    config.ConnectionString = appInsights;
 });
 
 await builder.Build().RunAsync();

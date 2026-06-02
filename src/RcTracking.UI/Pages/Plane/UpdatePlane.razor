@@ -29,7 +29,7 @@
 			<MudItem xs="4">
 				@if (!string.IsNullOrEmpty(planeImg))
 				{
-					<MudImage Src="@planeImg" Alt="Plane Image" Fluid="true"/>
+					<MudImage Src="@planeImg" Alt="Plane Image" Fluid="true" />
 				}
 			</MudItem>
 		</MudGrid>
@@ -58,6 +58,9 @@
 	[Inject]
 	private IImageService ImageService { get; set; }
 
+	[Inject]
+	private ILogger<UpdatePlane> Logger { get; set; }
+
 	[Parameter]
 	public PlaneModel Plane { get; init; }
 
@@ -70,12 +73,12 @@
 
 	private void Cancel() => MudDialog.Cancel();
 
-    private byte[] updateImage { get; set; } = [];
-    private string fileName { get; set; }
+	private byte[] updateImage { get; set; } = [];
+	private string fileName { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
-		if(ImageService.Images.TryGetValue(Plane.Id, out var imageModel))
+		if (ImageService.Images.TryGetValue(Plane.Id, out var imageModel))
 		{
 			planeImg = $"data:image/jpg;base64,{imageModel?.ImageString ?? ""}";
 		}
@@ -87,8 +90,9 @@
 		MudDialog.Close(DialogResult.Ok(true));
 
 		Console.WriteLine($"Saving Plane, Id:{Plane.Id} Images:{updateImage?.Length}");
+		Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
 
-		if(Plane.Id == Guid.Empty)
+		if (Plane.Id == Guid.Empty)
 		{
 			var id = await PlaneService.AddPlaneAsync(Plane);
 			await addImage(id);
@@ -108,15 +112,24 @@
 		using var memoryStream = new MemoryStream();
 		await stream.CopyToAsync(memoryStream);
 		updateImage = memoryStream.ToArray();
-        fileName = file.Name;
+		fileName = file.Name;
 	}
 
 	private async Task addImage(Guid planeId)
 	{
-		if(updateImage.Length > 0)
+		try
 		{
-			await ImageService.AddImage(planeId, updateImage, fileName);
-            Console.WriteLine($"Image added for Plane Id: {planeId}");
+			if (updateImage.Length > 0)
+			{
+				await ImageService.AddImage(planeId, updateImage, fileName);
+				Console.WriteLine($"Image added for Plane Id: {planeId}");
+				Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error adding image for Plane Id: {planeId} - {ex.Message}");
+			Logger.LogError(ex, "Error adding image for Plane Id: {PlaneId}", planeId);
 		}
 	}
 }
