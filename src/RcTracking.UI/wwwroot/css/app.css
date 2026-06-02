@@ -113,3 +113,23 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+@media (max-width: 1279px) and (orientation: landscape) {
+    .chart-responsive .mud-chart {
+        height: 35vh !important;
+    }
+
+    .tall-chart-responsive .mud-chart {
+        height: 60vh !important;
+    }
+}
+
+@media (max-width: 1279px) and (orientation: portrait) {
+    .chart-responsive .mud-chart {
+        height: 25vh !important;
+    }
+    
+    .tall-chart-responsive .mud-chart {
+        height: 30vh !important;
+    }
+}

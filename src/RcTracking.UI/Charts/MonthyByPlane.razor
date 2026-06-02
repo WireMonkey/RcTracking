@@ -4,13 +4,19 @@
 <h3>Monthly Flights By Plane</h3>
 @if (showChart)
 {
-	<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+	<MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+		<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+	</MudHidden>
+	<MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+		<div class="chart-responsive">
+			<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="100%" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+		</div>
+	</MudHidden>
 }
 else
 {
 	<p>No data to display</p>
 }
-
 
 @code {
 	[Inject]
@@ -42,9 +48,10 @@ else
 	{
 		EventBus.OnMessage += OnMessage;
 		chartOptions.YAxisTicks = 1;
-		chartOptions.MaxNumYAxisTicks = 20;
+		chartOptions.MaxNumYAxisTicks = 10;
 		axisChartOptions.MatchBoundsToSize = true;
 		axisChartOptions.StackedBarWidthRatio = .8;
+		axisChartOptions.XAxisLabelRotation = 40;
 
 		if (PlaneService.HasLoaded && FlightService.HasLoaded)
 		{
