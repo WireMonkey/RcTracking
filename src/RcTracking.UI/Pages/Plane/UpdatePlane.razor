@@ -92,8 +92,6 @@
 		_visible = true;
 		MudDialog.Close(DialogResult.Ok(true));
 
-		Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
-
 		if (Plane.Id == Guid.Empty)
 		{
 			var id = await PlaneService.AddPlaneAsync(Plane);
@@ -110,37 +108,18 @@
 
 	private async Task UploadFiles(IBrowserFile file)
 	{
-		try
-		{
-			Logger.LogInformation("Uploading file: {FileName}, Size: {FileSize} bytes", file.Name, file.Size);
-			using var stream = file.OpenReadStream(long.MaxValue);
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream);
-			updateImage = memoryStream.ToArray();
-			fileName = file.Name;
-			Logger.LogInformation("File uploaded: {fileName}, Size: {fileSize} bytes, Image byte length: {updateImageLength}", file.Name, file.Size, updateImage.Length);
-		}
-		catch (Exception ex)
-		{
-			SnackbarService.Add($"Error uploading file: {ex.Message}", Severity.Error);
-			Logger.LogError(ex, "Error uploading file: {FileName}", file.Name);
-		}
+		using var stream = file.OpenReadStream(long.MaxValue);
+		using var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream);
+		updateImage = memoryStream.ToArray();
+		fileName = file.Name;
 	}
 
 	private async Task addImage(Guid planeId)
 	{
-		try
+		if (updateImage.Length > 0)
 		{
-			if (updateImage.Length > 0)
-			{
-				await ImageService.AddImage(planeId, updateImage, fileName);
-				Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
-			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Error adding image for Plane Id: {planeId} - {ex.Message}");
-			Logger.LogError(ex, "Error adding image for Plane Id: {PlaneId}", planeId);
+			await ImageService.AddImage(planeId, updateImage, fileName);
 		}
 	}
 }

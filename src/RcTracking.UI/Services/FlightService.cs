@@ -16,19 +16,21 @@ namespace RcTracking.UI.Services
         private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ISnackbar? _snackbarService;
         private bool _hasLoaded = false;
+        private readonly ILogger<FlightService> _logger;
 
-        public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService)
+        public FlightService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService, ILogger<FlightService> logger)
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
             _apiKey = configuration.GetValue<string>("apiKey") ?? throw new ArgumentNullException(nameof(configuration), "apiKey is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
             _snackbarService = snackbarService ?? throw new ArgumentNullException(nameof(snackbarService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // Backward-compatible overload used by unit tests which don't need an access token provider
         public FlightService(IConfiguration configuration, EventBus eventBus, ISnackbar snackbarService)
-            : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService)
+            : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService, new LoggerFactory().CreateLogger<FlightService>())
         {
         }
 
@@ -69,11 +71,12 @@ namespace RcTracking.UI.Services
 
         public async Task LoadFlightsAsync()
         {
-            _snackbarService?.Add("Loading flights");
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var response = await httpClient.GetAsync($"{_apiUrl}flight");
-            if (response.IsSuccessStatusCode)
+            try
             {
+                _snackbarService?.Add("Loading flights");
+                using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
+                var response = await httpClient.GetAsync($"{_apiUrl}flight");
+                response.EnsureSuccessStatusCode();
                 var apiReturn = await response.Content.ReadAsStringAsync()
                     .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<FlightModel[]>(t.Result,
                         new System.Text.Json.JsonSerializerOptions
@@ -89,16 +92,21 @@ namespace RcTracking.UI.Services
                 _hasLoaded = true;
                 return;
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while loading flights from API");
+            }
 
             _snackbarService?.Add("Failed to load flights from API", Severity.Error);
         }
 
         public async Task AddFlightAsync(FlightModel flight)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var response = await httpClient.PostAsJsonAsync($"{_apiUrl}flight", flight);
-            if (response.IsSuccessStatusCode)
+            try
             {
+                using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
+                var response = await httpClient.PostAsJsonAsync($"{_apiUrl}flight", flight);
+                response.EnsureSuccessStatusCode();
                 var addedFlight = await response.Content.ReadAsStringAsync()
                     .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<FlightModel>(t.Result,
                         new System.Text.Json.JsonSerializerOptions
@@ -120,16 +128,21 @@ namespace RcTracking.UI.Services
                     return;
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while adding flight to API");
+            }
 
             _snackbarService?.Add("Failed to add flight to DB", Severity.Error);
         }
 
         public async Task UpdateFlightAsync(FlightModel flight)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var response = await httpClient.PutAsJsonAsync($"{_apiUrl}flight/{flight.Id}", flight);
-            if (response.IsSuccessStatusCode)
+            try
             {
+                using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
+                var response = await httpClient.PutAsJsonAsync($"{_apiUrl}flight/{flight.Id}", flight);
+                response.EnsureSuccessStatusCode();
                 var updatedFlight = await response.Content.ReadAsStringAsync()
                     .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<FlightModel>(t.Result,
                         new System.Text.Json.JsonSerializerOptions
@@ -146,21 +159,30 @@ namespace RcTracking.UI.Services
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while updating flight in API");
+            }
 
             _snackbarService?.Add("Failed to update flight in DB", Severity.Error);
         }
 
         public async Task DeleteFlightAsync(Guid flightId)
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var response = await httpClient.DeleteAsync($"{_apiUrl}flight/{flightId}");
-            if (response.IsSuccessStatusCode)
+            try
             {
+                using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
+                var response = await httpClient.DeleteAsync($"{_apiUrl}flight/{flightId}");
+                response.EnsureSuccessStatusCode();
                 if (_flights.Remove(flightId))
                 {
                     _eventBus.Message = new EventMessage { Event = EventEnum.RefreshFlight };
                     return;
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while deleting flight from API");
             }
 
             _snackbarService?.Add("Failed to delete flight from DB", Severity.Error);

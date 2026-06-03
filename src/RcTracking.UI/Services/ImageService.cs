@@ -18,20 +18,22 @@ namespace RcTracking.UI.Services
         private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ISnackbar _snackbarService;
         private bool _hasLoaded = false;
-        private long _maxAllowedSize = 15 * 1024 * 1024; // 15 MB
+        private readonly ILogger<ImageService> _logger;
 
-        public ImageService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService)
+        public ImageService(IConfiguration configuration, EventBus eventBus, IAccessTokenProvider accessTokenProvider, ISnackbar snackbarService, ILogger<ImageService> logger)
         {
             _apiUrl = configuration.GetValue<string>("apiUrl") ?? throw new ArgumentNullException(nameof(configuration), "apiUrl is missing");
             _apiKey = configuration.GetValue<string>("apiKey") ?? throw new ArgumentNullException(nameof(configuration), "apiKey is missing");
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
             _snackbarService = snackbarService ?? throw new ArgumentNullException(nameof(snackbarService));
         }
 
         // Backward-compatible overload used by unit tests
         public ImageService(IConfiguration configuration, EventBus eventBus, ISnackbar snackbarService)
-            : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService)
+            : this(configuration, eventBus, new DefaultAccessTokenProvider(), snackbarService, new LoggerFactory().CreateLogger<ImageService>())
         {
         }
 
@@ -70,47 +72,45 @@ namespace RcTracking.UI.Services
                 var form = new MultipartFormDataContent();
                 form.Add(new StreamContent(new MemoryStream(image)), "file", fileName);
 
-                if(hasImage)
+                if (hasImage)
                 {
                     form.Add(new StringContent(imageModel.Id.ToString()), "id");
-                } else
+                }
+                else
                 {
                     form.Add(new StringContent(planeId.ToString()), "id");
                 }
 
                 var response = hasImage ? await httpClient.PutAsync($"{_apiUrl}image", form) : await httpClient.PostAsync($"{_apiUrl}image", form);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var returnImage = await response.Content.ReadAsStringAsync()
+                response.EnsureSuccessStatusCode();
+                var returnImage = await response.Content.ReadAsStringAsync()
                         .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<ImageModel>(t.Result,
                             new System.Text.Json.JsonSerializerOptions
                             {
                                 PropertyNameCaseInsensitive = true
                             }));
-                    if (returnImage is not null)
-                    {
-                        if(hasImage)
-                            _images[planeId] = returnImage;
-                        else
-                            _images.Add(returnImage.PlaneId, returnImage);
+                if (returnImage is not null)
+                {
+                    if (hasImage)
+                        _images[planeId] = returnImage;
+                    else
+                        _images.Add(returnImage.PlaneId, returnImage);
 
-                        _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
-                        _snackbarService.Add("Image added successfully", Severity.Success);
-                        return;
-                    }
+                    _eventBus.Message = new EventMessage { Event = EventEnum.ImageUpsert };
+                    _snackbarService.Add("Image added successfully", Severity.Success);
+                    return;
                 }
 
                 _snackbarService.Add("Failed to add image to DB", Severity.Error);
             }
-            catch (IOException ex) 
-            { 
-                Console.WriteLine(ex.ToString());
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO Exception while uploading image for plane {PlaneId}", planeId);
                 _snackbarService.Add($"Image was to big.", Severity.Error);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                _logger.LogError(ex, "Exception while uploading image for plane {PlaneId}", planeId);
                 _snackbarService.Add($"An error occurred while uploading the image.", Severity.Error);
             }
         }
@@ -122,10 +122,11 @@ namespace RcTracking.UI.Services
 
         public async Task LoadImages()
         {
-            using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
-            var response = await httpClient.GetAsync($"{_apiUrl}image");
-            if (response.IsSuccessStatusCode)
+            try
             {
+                using var httpClient = await HttpClientHelper.CreateHttpClient(_apiUrl, _apiKey, _accessTokenProvider);
+                var response = await httpClient.GetAsync($"{_apiUrl}image");
+                response.EnsureSuccessStatusCode();
                 var apiReturn = await response.Content.ReadAsStringAsync()
                     .ContinueWith(t => System.Text.Json.JsonSerializer.Deserialize<List<ImageModel>>(t.Result,
                         new System.Text.Json.JsonSerializerOptions
@@ -146,7 +147,11 @@ namespace RcTracking.UI.Services
                 _eventBus.Message = new EventMessage { Event = EventEnum.RefreshImage };
                 return;
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while loading images");
+                _snackbarService.Add($"An error occurred while loading images.", Severity.Error);
+            }
         }
-
     }
 }
