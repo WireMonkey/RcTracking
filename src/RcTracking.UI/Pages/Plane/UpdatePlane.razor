@@ -118,7 +118,7 @@
 			await stream.CopyToAsync(memoryStream);
 			updateImage = memoryStream.ToArray();
 			fileName = file.Name;
-			Console.WriteLine("File uploaded: {fileName}, Size: {fileSize} bytes, Image byte length: {updateImageLength}", file.Name, file.Size, updateImage.Length);
+			Logger.LogInformation("File uploaded: {fileName}, Size: {fileSize} bytes, Image byte length: {updateImageLength}", file.Name, file.Size, updateImage.Length);
 		}
 		catch (Exception ex)
 		{
