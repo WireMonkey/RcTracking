@@ -44,7 +44,7 @@
 			</ActivatorContent>
 		</MudFileUpload>
 		<MudButton OnClick="Cancel">Cancel</MudButton>
-		<MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit" Disabled="_visible">OK</MudButton>
 	</DialogActions>
 </MudDialog>
 
@@ -60,6 +60,9 @@
 
 	[Inject]
 	private ILogger<UpdatePlane> Logger { get; set; }
+
+	[Inject]
+	private ISnackbar SnackbarService { get; set; }
 
 	[Parameter]
 	public PlaneModel Plane { get; init; }
@@ -89,7 +92,6 @@
 		_visible = true;
 		MudDialog.Close(DialogResult.Ok(true));
 
-		Console.WriteLine($"Saving Plane, Id:{Plane.Id} Images:{updateImage?.Length}");
 		Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
 
 		if (Plane.Id == Guid.Empty)
@@ -108,11 +110,21 @@
 
 	private async Task UploadFiles(IBrowserFile file)
 	{
-		using var stream = file.OpenReadStream();
-		using var memoryStream = new MemoryStream();
-		await stream.CopyToAsync(memoryStream);
-		updateImage = memoryStream.ToArray();
-		fileName = file.Name;
+		try
+		{
+			Logger.LogInformation("Uploading file: {FileName}, Size: {FileSize} bytes", file.Name, file.Size);
+			using var stream = file.OpenReadStream();
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			updateImage = memoryStream.ToArray();
+			fileName = file.Name;
+			Console.WriteLine("File uploaded: {fileName}, Size: {fileSize} bytes, Image byte length: {updateImageLength}", file.Name, file.Size, updateImage.Length);
+		}
+		catch (Exception ex)
+		{
+			SnackbarService.Add($"Error uploading file: {ex.Message}", Severity.Error);
+			Logger.LogError(ex, "Error uploading file: {FileName}", file.Name);
+		}
 	}
 
 	private async Task addImage(Guid planeId)
@@ -122,7 +134,6 @@
 			if (updateImage.Length > 0)
 			{
 				await ImageService.AddImage(planeId, updateImage, fileName);
-				Console.WriteLine($"Image added for Plane Id: {planeId}");
 				Logger.LogInformation("Saving Plane, Id:{PlaneId} Images:{ImageLength}", Plane.Id, updateImage?.Length);
 			}
 		}
