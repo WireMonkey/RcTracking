@@ -1,16 +1,15 @@
 ﻿@using RcTracking.UI.Events
 @using RcTracking.UI.Interface
 @using RcTracking.UI.Services
-@using System.Linq
-<h3>Flights by Plane</h3>
+<h3>Recently Flown Planes</h3>
 @if (showChart)
 {
 	<MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
 		<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="20vh" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
 	</MudHidden>
 	<MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
-		<div class="tall-chart-responsive">
-			<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
+		<div class="chart-responsive">
+			<MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series" XAxisLabels="@Labels" Width="100%" Height="100%" ChartOptions="@chartOptions" AxisChartOptions="@axisChartOptions"></MudChart>
 		</div>
 	</MudHidden>
 }
@@ -27,7 +26,13 @@ else
 	private IPlaneService PlaneService { get; set; }
 
 	[Inject]
+	private IFlightService FlightService { get; set; }
+
+	[Inject]
 	private EventBus EventBus { get; set; }
+
+	[Parameter]
+	public int MonthsToShow { get; set; } = 2;
 
 	private List<ChartSeries> Series { get; set; } = new();
 
@@ -44,12 +49,11 @@ else
 		EventBus.OnMessage += OnMessage;
 		chartOptions.YAxisTicks = 1;
 		chartOptions.MaxNumYAxisTicks = 10;
-		chartOptions.ShowLegend = false;
 		axisChartOptions.MatchBoundsToSize = true;
 		axisChartOptions.StackedBarWidthRatio = .8;
-        axisChartOptions.XAxisLabelRotation = 10;
+		axisChartOptions.XAxisLabelRotation = 10;
 
-		if (PlaneService.HasLoaded)
+		if (PlaneService.HasLoaded && FlightService.HasLoaded)
 		{
 			UpdateChartData();
 		}
@@ -70,30 +74,59 @@ else
 
 	private void UpdateChartData()
 	{
-		var cPlanes = CombineDataService.PlaneStats;
-		
-		Labels = new string[cPlanes.Count];
+		var planeSeries = new Dictionary<Guid, (string Name, int Count)>();
+		planeSeries.EnsureCapacity(5);
+
+		for (int i = MonthsToShow; i >= 0; i--)
+		{
+			var cDate = DateTime.Now.AddMonths(-i);
+			var cMonth = new DateTime(cDate.Year, cDate.Month, 1);
+			CombineDataService.MonthyStats.TryGetValue(DateOnly.FromDateTime(cMonth), out var monthData);
+
+			if (monthData is not null) {
+				foreach (var flight in monthData)
+				{
+					var planeName = PlaneService.Planes[flight.Key].Name;
+					if (planeSeries.ContainsKey(flight.Key))
+					{
+						planeSeries[flight.Key] = (planeName, planeSeries[flight.Key].Count + flight.Value);
+					}
+					else if (planeSeries.Count < 5) //Only show the top 5 planes in the chart, but still count all planes in the data
+					{
+						planeSeries[flight.Key] = (planeName, flight.Value);
+					}
+				}
+			}
+		}
+
+		if (planeSeries.Count == 0)
+		{
+			Series.Clear();
+			showChart = false;
+			return;
+		}
+
+		Labels = new string[planeSeries.Count];
 
 		var series = new ChartSeries
 		{
 			Name = "Flights",
-			Data = new double[cPlanes.Count]
+			Data = new double[planeSeries.Count]
 		};
 
-		var entries = cPlanes.ToArray();
-		for (int i = 0; i < entries.Length; i++)
+
+		for (int i = 0; i < planeSeries.Count; i++)
 		{
-			var cPlane = entries[i];
+			var cPlane = planeSeries.ElementAt(i);
 			var plane = PlaneService.Planes[cPlane.Key];
 			Labels[i] = plane.Name;
 
-			series.Data[i] = cPlane.Value.TotalFlights;
+			series.Data[i] = cPlane.Value.Count;
 		}
 
-		Series.Clear();
 		Series.Add(series);
 
-		showChart = Series.Count > 0;
+		showChart = true;
 	}
 
 }
